@@ -14,7 +14,6 @@ var io =  socket(server,{
     pingInterval: 10000
 });
 
-
 //静态资源
 app.use(express.static('public'));
 
@@ -33,6 +32,49 @@ app.get('/socketIndex/:fileName', function(req, res){
         }
     });
 });
+
+//express web方式自动路由方式
+app.get('/queryAllUser', function (req, res) {
+
+    res.writeHead(200, {'Content-Type': 'application/json'});
+    try{
+        //方法二  回掉函数方式同步
+        login.userBack(function(flag, results){
+            if(flag){
+                res.write(JSON.stringify(results));
+                res.end();
+            }else{
+                res.end(JSON.stringify({"status": 001, "error": e.toString()}));
+            }
+        });
+    }catch (e){
+        res.end(JSON.stringify({"status": 001, "error": e.toString()}));
+    }
+});
+
+
+//登陆
+app.get('/login', function (req, res) {
+
+    res.writeHead(200, {'Content-Type': 'application/json'});
+    try{
+        var userName = req.param("userName");
+        var password = req.param("password");
+
+        //方法二  回掉函数方式同步
+        login.loginBack(userName, password, function(flag, msg, results){
+            if(flag){
+                res.write(JSON.stringify(map));
+                res.end();
+            }else{
+                res.end(JSON.stringify({"status": 001, "error": e.toString()}));
+            }
+        });
+    }catch (e){
+        res.end(JSON.stringify({"status": 001, "error": e.toString()}));
+    }
+});
+
 
 
 var index = io.of("/index");

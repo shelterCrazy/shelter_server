@@ -14,7 +14,7 @@ connection.connect();
 exports.emitter = new eventEmitter();
 
 //登陆查询  事件方式
-exports.login = function(userName, password){
+exports.login = function(userName, password){0
     try {
         connection.query('select * from user where user_name="' + userName + '" and password="' + password + '"',
             function (error, results, fields) {
@@ -47,6 +47,25 @@ exports.loginBack = function(userName, password, fn){
                 } else {
                     console.log("查询无结果");
                     fn(false, '登陆失败，请检查用户名密码', results);
+                }
+            });
+    } catch (e) {
+        console.log("查询错误");
+        fn(false, '查询异常'+e.stack);
+    }
+}
+
+
+//获取所有用户信息  回掉函数方式
+exports.userBack = function(fn){
+    try {
+        connection.query('select * from user',
+            function (error, results, fields) {
+                if (error) throw error;
+
+                if (results != null && results.length > 0) {
+                    console.log(JSON.stringify(results))
+                    fn(true, results);
                 }
             });
     } catch (e) {

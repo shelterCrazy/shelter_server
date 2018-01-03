@@ -1,7 +1,6 @@
 var http = require('http');
 var app = require('express')();
-var mysql = require('mysql');
-
+var login = require('./dao/Login');
 
 //http连接
 // http.createServer(function (request, response) {
@@ -19,18 +18,7 @@ var mysql = require('mysql');
 // console.log('Server running at http://127.0.0.1:3000/');
 
 
-
-var connection = mysql.createConnection({
-    host     : '39.106.67.112',
-    user     : 'root',
-    password : '123456',
-    database : 'shelter'
-});
-connection.connect();
-
-
 //express web方式自动路由方式
-console.log(app);
 app.get('/queryAllUser', function (req, res) {
 
     res.writeHead(200, {'Content-Type': 'application/json'});
@@ -65,23 +53,14 @@ app.get('/login', function (req, res) {
         var userName = req.param("userName");
         var password = req.param("password");
 
-        var sql = "select * from user where user_name='" + userName + "' and password='" + password + "'";
-        connection.query(sql, function (error, results, fields) {
-            if (error) throw error;
-            console.log('The solution is: ', results);
-
-            var map = {};
-            map.result = results;
-            map.status = 200;
-            if(results != null && results.length > 0){
-                map.result = results;
-                map.status = 200;
+        //方法二  回掉函数方式同步
+        login.loginBack(userName, password, function(flag, msg, results){
+            if(flag){
+                res.write(JSON.stringify(map));
+                res.end();
             }else{
-                map.status = 002;
-                map.msg = "登陆失败，用户名或密码错误";
+                res.end(JSON.stringify({"status": 001, "error": e.toString()}));
             }
-            res.write(JSON.stringify(map));
-            res.end();
         });
     }catch (e){
         res.end(JSON.stringify({"status": 001, "error": e.toString()}));
