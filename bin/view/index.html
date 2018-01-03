@@ -9,7 +9,7 @@
 
     <p><b>呵呵 这是socket.io测试页面</b></p>
     <p>使用说明: 首先F12 进入开发者工具模式</p>
-    <p>1.第一步 先登录   demo给出了默认登陆用户 kenan:123456  可以通过http接口 /queryAllUser 获取所有用户</p>
+    <p>1.第一步 使用start()  然后登录login()  demo给出了默认登陆用户 kenan:123456  可以通过http接口 /queryAllUser 获取所有用户</p>
     <p>2.使用空间 io.connect("http://localhost:3000/index")  demo中使用了index命名空间  实际使用中可以根据功能模块,使用不同明明空间建立多个连接</p>
     <p>3.room聊天室  roomMsg('房间名', '消息')在房间里发送广播消息   为了统一管理  固定作用的聊天室要用固定的名字, 以后需要拓展为动态房间名</p>
     <p>4.私聊 msg('消息', '对方id') socketID 测试的时候 可以用广播broadcastMsg()发送广播消息  接收方会打印socketID</p>
@@ -30,7 +30,7 @@
         var broadcastMsg = function(msg){
             socket.emit('broadcastMsg', {'msg': msg, 'token':token});
         }
-        //加入房间
+        //room聊天室聊天
         var roomMsg = function(room, msg){
             socket.emit('room', {'room':room, 'msg':msg, 'token':token});
         }
