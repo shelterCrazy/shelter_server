@@ -92,7 +92,7 @@ index.on("connection", function (socket) {
 
     //登陆拦截器  socket中间件
     socket.use(function(packet, next){
-        console.log("socket.use:packet" + packet[0]);
+        console.log("socket.use:packet:" + packet[0]);
         if(packet[0] == 'login' || packet[1].token != null){
             return next();
         }
@@ -103,6 +103,11 @@ index.on("connection", function (socket) {
     socket.on('error', function(error){
         console.log("socket.error");
         socket.emit('error',{'status': 001, 'msg':'error:' + error});
+    });
+
+    //链接断开
+    socket.on('disconnect', function(data){
+        console.log('socket.disconnect');
     });
 
 
@@ -133,7 +138,7 @@ index.on("connection", function (socket) {
         login.loginBack(userName, password, function(flag, msg, results){
             if(flag){
                 console.log('local socket.id ' + socket.id)
-                socket.emit('loginResult',{'status':200,'msg':msg, 'results': results[0].id});
+                socket.emit('loginResult',{'status':200,'msg':msg, 'results': encode(results[0].id)});
             }else{
                 console.log('local socket.id ' + socket.id)
                 socket.emit('loginResult',{'status':001,'msg':msg});
@@ -143,7 +148,7 @@ index.on("connection", function (socket) {
 
     //广播信息
     socket.on('broadcastMsg', function(data){
-        socket.broadcast.emit('msg', {'status': 200, 'socket.id:': socket.id + ' 发送了广播消息:' + data.msg});
+        socket.broadcast.emit('msg', {'status': 200, 'msg':'socket.id:'+ socket.id + ' 发送了广播消息:' + data.msg});
     });
 
     //私聊信息
@@ -172,3 +177,15 @@ index.on("connection", function (socket) {
 
 
 });
+
+
+
+var encode = function(str){
+    var r = (Math.random()*10).toFixed(0);
+    return String(r) + (((parseInt(str) + parseInt(r)) << 1) * 2)
+}
+var decode = function(str){
+    var r = str.substring(0,1);
+    var num = str.substring(1);
+    return ((num/2) >> 1) - r
+}

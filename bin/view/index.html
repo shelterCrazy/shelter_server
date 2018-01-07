@@ -14,29 +14,53 @@
     <p>3.room聊天室  roomMsg('房间名', '消息')在房间里发送广播消息   为了统一管理  固定作用的聊天室要用固定的名字, 以后需要拓展为动态房间名</p>
     <p>4.私聊 msg('消息', '对方id') socketID 测试的时候 可以用广播broadcastMsg()发送广播消息  接收方会打印socketID</p>
 
+    <P>优化 1.登陆token简单处理</P>
+    <p>需要做  1.心跳检测链接  接收事件 2.进入战斗消息  服务器提供room编号 3.战斗事件专用消息 4.开启帧同步心跳检测  策略  代替普通心跳检测 结束时候回归</p>
+
     <script type="text/javascript">
         //建立socket链接
-        var url = "http://39.106.67.112:3000";
+//        var url = "http://39.106.67.112:3000";
+        var url = "127.0.0.1:3000"
+
         var socket;
         var token;
         var userName = "kenan";
         var password = "123456";
 
+        var statusEnum = {
+            start:0,    //开始状态
+            login:1,    //已登陆状态
+            fight:2,    //战斗场景状态
+            index:3,    //主界面状态
+            exit:99     //应当退出游戏
+        }
+        var status = statusEnum.start;
+        var fightRoom;  //战斗房间记录
+        var talkRoom;  //聊天室房间记录
+
         //初始化页面  登陆访问   测试账户 kenan : 123456
         var login = function(){
             socket.emit('login', {'userName':userName,'password':password});
         }
-        //默认空间  默认room  普通消息测试
+        //默认空间  默认room  普通消息测试  消息广播
         var broadcastMsg = function(msg){
             socket.emit('broadcastMsg', {'msg': msg, 'token':token});
         }
+        //普通消息测试  私聊
+        var msg = function(msg,id){
+            socket.emit('msg', {'msg': msg, 'id':id, 'token':token});
+        }
+
         //room聊天室聊天
         var roomMsg = function(room, msg){
             socket.emit('room', {'room':room, 'msg':msg, 'token':token});
         }
-        //普通消息测试
-        var msg = function(msg,id){
-            socket.emit('msg', {'msg': msg, 'id':id, 'token':token});
+        var endRoom = function(room,)
+
+        //解除链接  退出游戏
+        var stop = function(){
+            status = statusEnum.exit;
+            socket.close();
         }
 
 
@@ -48,25 +72,26 @@
             socket.on('loginResult', function(data){
                 console.log('loginResult:' + data.msg + " results:" + data.results);
                 token = data.results;
+
             });
             //错误处理
             socket.on('error', function(error){
                 console.log('error:' + error);
             });
             //链接已关闭
-            socket.on('disconnect', function(){
-                console.log('disconnect');
+            socket.on('disconnect', function(data){
+                console.log('disconnect' + data.msg);
             });
             //重新链接
             socket.on('reconnect', function () {
-                log('reconnect');
+                console.log('reconnect');
                 if (userName != null && userName.length > 0) {
                     login();
                 }
             });
             //重连错误
             socket.on('reconnect_error', function () {
-                log('reconnect_error');
+                console.log('reconnect_error');
             });
             //广播消息测试
             socket.on('msg', function(data){
