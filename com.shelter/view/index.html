@@ -7,15 +7,28 @@
 </head>
 <body>
 
-    <p><b>呵呵 这是socket.io测试页面</b></p>
+    <p><b>呵呵 这是socket.io测试页面 </b><button onclick="start();login();">开始+登陆</button></p>
     <p>使用说明: 首先F12 进入开发者工具模式</p>
     <p>1.第一步 使用start()  然后登录login()  demo给出了默认登陆用户 kenan:123456  可以通过http接口 /queryAllUser 获取所有用户</p>
     <p>2.使用空间 io.connect("http://localhost:3000/index")  demo中使用了index命名空间  实际使用中可以根据功能模块,使用不同明明空间建立多个连接</p>
     <p>3.room聊天室  roomMsg('房间名', '消息')在房间里发送广播消息   为了统一管理  固定作用的聊天室要用固定的名字, 以后需要拓展为动态房间名</p>
     <p>4.私聊 msg('消息', '对方id') socketID 测试的时候 可以用广播broadcastMsg()发送广播消息  接收方会打印socketID</p>
+    <p>5.操作类监听controlMsg  对于控制类事件  加入room 退出room  登陆等消息  提供反馈结果   client对结果进行处理 </p>
 
-    <P>优化 1.登陆token简单处理</P>
+    <P>1.1版本优化 </P>
+    <p>1.登陆token简单处理</p>
+    <p>2.拦截器中间件特殊事件处理, token防伪处理</p>
+
     <p>需要做  1.心跳检测链接  接收事件 2.进入战斗消息  服务器提供room编号 3.战斗事件专用消息 4.开启帧同步心跳检测  策略  代替普通心跳检测 结束时候回归</p>
+    <p> 1.客户端发送匹配申请   服务端加入匹配队列
+        2.服务器轮询  随机挑取client  建立房间   将room和开始战斗消息发送给client
+        3.client 收到消息进入战斗场景  第一帧向服务器发送战斗开始消息
+        4.server 收到两边开始战斗消息  开始广播同步帧
+        5.clients 关键帧等待 server的同步消息
+        6.clients 相互异步发送操作  根据操作帧进行纠正处理 (持续性动作自动进行预处理   已实现)
+        7.clients 游戏结束发送游戏结果  应当包括自己端的 所有关键数据包括 自己和敌人的  英雄血量 小兵数量 水晶血量等 和最终结束的帧数    等待服务器发送最终确认结果
+        8.server 收到两边的游戏结束结果   根据策略  决定最终结果并发送给  clients
+        9.clients 根据服务器消息处理游戏结束结果   退出战斗room 和 聊天等一切相关的 room   战斗流程结束 </p>
 
     <script type="text/javascript">
         //建立socket链接
@@ -27,6 +40,7 @@
         var userName = "kenan";
         var password = "123456";
 
+        //游戏状态
         var statusEnum = {
             start:0,    //开始状态
             login:1,    //已登陆状态
@@ -34,6 +48,21 @@
             index:3,    //主界面状态
             exit:99     //应当退出游戏
         }
+
+        //消息结果
+        var msgEnum= {
+            success:200,   //普通消息
+            fail:1,     //操作失败消息反馈
+            error:2,    //错误消息
+        }
+
+        //操作类型
+        var msgType= {
+            login:0,        //登陆操作
+            joinRoom:1,     //申请room操作
+            leaveRoom:2,    //离开房间
+        }
+
         var status = statusEnum.start;
         var fightRoom;  //战斗房间记录
         var talkRoom;  //聊天室房间记录
@@ -51,15 +80,23 @@
             socket.emit('msg', {'msg': msg, 'id':id, 'token':token});
         }
 
-        //room聊天室聊天
+        //申请room聊天室聊天  type: roomChat普通聊天 roomHit战斗房间/战斗申请
+        var joinMsg = function(type){
+            socket.emit('join',{type:type})
+        }
+        //room聊天  可以先用joinMsg 申请一个房间   然后再用roomMsg发送消息
         var roomMsg = function(room, msg){
             socket.emit('room', {'room':room, 'msg':msg, 'token':token});
         }
-        var endRoom = function(room,)
+        //退出room
+        var endRoom = function(room){
+            socket.emit('leave', {'room':room, 'leaveFlag':true, 'token':token})
+        }
 
         //解除链接  退出游戏
         var stop = function(){
             status = statusEnum.exit;
+            socket.emit('close');  //向服务器发送关闭链接消息  然后断开链接
             socket.close();
         }
 
@@ -93,9 +130,34 @@
             socket.on('reconnect_error', function () {
                 console.log('reconnect_error');
             });
-            //广播消息测试
+            //消息类监听
             socket.on('msg', function(data){
                 console.log('msg' + data.msg);
+            });
+            //操作类反馈消息监听
+            socket.on('controlMsg', function(data){
+                console.log('controlMsg, type:' + data.type + ' msg:' + data.msg);
+                switch (data.type){
+                    case msgType.login:
+                        if(data.status == msgEnum.fail || data.status == msgEnum.error){ //登陆错误重新尝试
+                            setTimeout(login(),1000); //1秒间隔
+                        }
+                        break;
+                    case msgType.joinRoom:
+                        if(data.status == msgEnum.fail || data.status == msgEnum.error){
+                            setTimeout(join(),1000); //1秒间隔
+                        }else{
+                            //type: roomChat 普通聊天 roomHit 战斗房间
+                            if(data.type == 'roomChat'){
+                                talkRoom = data.room;
+                            }else if(data.type == 'roomHit'){
+                                fightRoom = data.room;
+                            }
+                        }
+                        break;
+                    default:
+                        console.log("default  type:" + data.type);
+                }
             });
             //room聊天
             socket.on('roomChat', function(data){
