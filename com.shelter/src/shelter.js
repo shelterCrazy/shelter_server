@@ -14,6 +14,8 @@ var io =  socket(server,{
     pingTimeout: 6000,
     pingInterval: 10000
 });
+
+
 //静态资源
 app.use(express.static('public'));
 

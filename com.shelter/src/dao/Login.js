@@ -10,8 +10,7 @@ var connection = mysql.createConnection({
 connection.connect();
 
 //对外异步通知接口
-
-exports.emitter = new eventEmitter();
+// exports.emitter = new eventEmitter();
 
 
 //登陆查询  回掉函数方式
@@ -36,6 +35,28 @@ exports.loginBack = function(userName, password, fn){
 }
 
 
+//检查用户名是否重复
+exports.userNameReCheck = function(userName, fn){
+    try {
+        connection.query('select id from user where user_name="' + userName + '"',
+            function (error, results, fields) {
+                if (error) throw error;
+
+                if (results != null && results.length > 0) {
+                    console.log(JSON.stringify(results))
+                    fn(false, '用户名存在');
+                } else {
+                    console.log("查询无结果");
+                    fn(true, '用户名不存在,可以使用');
+                }
+            });
+    } catch (e) {
+        console.log("查询错误");
+        fn(false, '查询异常'+e.stack);
+    }
+}
+
+
 //获取所有用户信息  回掉函数方式
 exports.userBack = function(fn){
     try {
@@ -46,6 +67,27 @@ exports.userBack = function(fn){
                 if (results != null && results.length > 0) {
                     console.log(JSON.stringify(results))
                     fn(true, results);
+                }
+            });
+    } catch (e) {
+        console.log("查询错误");
+        fn(false, '查询异常'+e.stack);
+    }
+}
+
+
+//注册用户
+exports.register = function(userName, password, fn){
+    try {
+        connection.query('insert into user(user_name,password)values(?,?)', [userName, password],
+            function (error, results) {
+                if (error) throw error;
+
+                if (results != null && results.insertId != 0) {
+                    console.log(JSON.stringify(results))
+                    fn(true);
+                }else{
+                    fn(false);
                 }
             });
     } catch (e) {
