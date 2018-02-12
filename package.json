@@ -4,7 +4,7 @@
   "description": "shelter_server",
   "main": "shelter",
   "scripts": {
-    "shelter": "node ./bin/shelter.js"
+    "shelter": "node ./com/shelter/src/shelter.js"
   },
   "repository": {
     "type": "git",
