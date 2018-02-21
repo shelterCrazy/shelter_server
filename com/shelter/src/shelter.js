@@ -1,10 +1,17 @@
 var http = require('http');
 var express = require('express');
 var app = express();
+
 var socket = require('socket.io');
-var login = require('./dao/Login');
-var index = require('./index');
+var login = require('./dao/LoginDao');
+
+var index = require('./indexControllor');
+var userCard = require('./userCradController');
+var interceptor = require('./Interceptor/LoginInterceptor');
+
 var util = require('./util.js');
+
+
 
 //应用监听端口
 var port = 3000;
@@ -33,18 +40,31 @@ var msgEnum= {
 }
 
 
+
+
 //引入外界js的方式分流书写app功能
+//拦截器
+interceptor(app);
+//注册登陆功能信息
 index(app);
+//用户卡牌包-卡牌信息
+userCard(app);
+
+
 
 
 //初始化/index 空间
 var index = io.of("/index");
+
+
 //io中间件
 index.use(function(socket, next){
     console.log("nameSpace.use");
     next();
 });
 
+
+//战斗社交场景socket
 index.on("connection", function (socket) {
     console.log("socket.io监听connection")
 
@@ -55,7 +75,7 @@ index.on("connection", function (socket) {
             return next();
         }else if(packet.length > 1){
             try{
-                var id = decode(packet[1].token);
+                var id = util.decode(packet[1].token);
                 console.log("id:" + id + " util.get(id):" + util.get(id));
                 if(util.get(id) != null){
                     return next();
@@ -91,7 +111,7 @@ index.on("connection", function (socket) {
         login.loginBack(userName, password, function(flag, msg, results){
             if(flag){
                 console.log('local socket.id ' + socket.id)
-                var token = encode(results[0].id);
+                var token = util.encode(results[0].id);
                 socket.emit('loginResult',{'status':msgEnum.success,'msg':msg, 'results': token});
 
                 util.push(token, results[0].id);
@@ -154,20 +174,4 @@ index.on("connection", function (socket) {
             new Error('进入room失败')
         }
     });
-
-
 });
-
-
-
-//加密
-var encode = function(str){
-    var r = (Math.random()*10).toFixed(0);
-    return String(r) + (((parseInt(str) + parseInt(r)) << 1) * 2)
-}
-//解密
-var decode = function(str){
-    var r = str.substring(0,1);
-    var num = str.substring(1);
-    return ((num/2) >> 1) - r
-}

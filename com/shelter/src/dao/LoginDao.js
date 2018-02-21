@@ -1,16 +1,15 @@
 var mysql = require('mysql');
-var eventEmitter = require('events');
+var json = require('../properties/mysql.json');
+var fs = require('fs');
+var json = JSON.parse(fs.readFileSync(__dirname + "/../properties/mysql.json"));
 
 var connection = mysql.createConnection({
-    host     : '39.106.67.112',
-    user     : 'root',
-    password : '123456',
-    database : 'shelter'
+    host     : json.host,
+    user     : json.user,
+    password : json.password,
+    database : json.database
 });
 connection.connect();
-
-//对外异步通知接口
-// exports.emitter = new eventEmitter();
 
 
 //登陆查询  回掉函数方式

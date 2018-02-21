@@ -19,5 +19,18 @@ module.exports = {
         }else{
             return tokenPool[id];
         }
+    },
+
+    //加密
+    encode : function(str){
+        var r = (Math.random()*10).toFixed(0);
+        return String(r) + (((parseInt(str) + parseInt(r)) << 1) * 2)
+    },
+
+    //解密
+    decode : function(str){
+        var r = str.substring(0,1);
+        var num = str.substring(1);
+        return ((num/2) >> 1) - r
     }
 }

@@ -1,6 +1,6 @@
 var http = require('http');
 var app = require('express')();
-var login = require('../src/dao/Login');
+var login = require('../src/dao/LoginDao');
 
 //http连接
 // http.createServer(function (request, response) {

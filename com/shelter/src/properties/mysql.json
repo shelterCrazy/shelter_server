@@ -1,3 +1,6 @@
 {
-
+  "host"     : "39.106.67.112",
+  "user"     : "root",
+  "password" : "123456",
+  "database" : "shelter"
 }

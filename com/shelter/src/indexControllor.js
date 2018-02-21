@@ -1,6 +1,5 @@
-var login = require('./dao/Login');
-var session = require('express-session');
-var bodyparser = require('body-parser');
+var login = require('./dao/LoginDao');
+var util = require('./util.js');
 var app;
 
 //引入express 对象
@@ -11,18 +10,6 @@ module.exports = function(appL){
 
 //初始化  只有在引入app对象后才能开启 app路由
 var init = function(){
-
-    app.use(session({
-        secret: 'kenanCrazy', //secret的值建议使用随机字符串
-        cookie: {maxAge: 60 * 1000 * 30} // 过期时间（毫秒）
-    }));
-
-    // parse application/x-www-form-urlencoded
-    app.use(bodyparser.urlencoded({ extended: false }));
-
-    // parse application/json
-    app.use(bodyparser.json());
-
 
     //展示socketio demo页面
     app.get('/socketIndex/:fileName', function(req, res){
@@ -52,12 +39,12 @@ var init = function(){
                     res.end();
                     return;
                 }else{
-                    res.end(JSON.stringify({"status": '001', "error": e.toString()}));
+                    res.end(JSON.stringify({"status": '001', "msg": "查无数据"}));
                     return;
                 }
             });
         }catch (e){
-            res.end(JSON.stringify({"status": '001', "error": e.toString()}));
+            res.end(JSON.stringify({"status": '001', "msg": e.toString()}));
         }
     });
 
@@ -73,18 +60,25 @@ var init = function(){
             //方法二  回掉函数方式同步
             login.loginBack(userName, password, function(flag, msg, results){
                 if(flag){
+                    var token = util.encode(results[0].id);
+                    req.session.token = token;
+                    util.push(token, results[0].id);
+
                     res.write(JSON.stringify(results));
                     res.end();
                     return;
                 }else{
-                    res.end(JSON.stringify({"status": '001', "error": e.toString()}));
+                    res.end(JSON.stringify({"status": '001', "msg": "查无数据"}));
                     return;
                 }
             });
         }catch (e){
-            res.end(JSON.stringify({"status": '001', "error": e.toString()}));
+            res.end(JSON.stringify({"status": '001', "msg": e.toString()}));
         }
     });
+
+    //http的退出登陆
+    //需要util.decode(packet[1].token);
 
 
     //用户名查重
@@ -99,7 +93,7 @@ var init = function(){
                 return;
             });
         }catch(e){
-            res.end(JSON.stringify({"status": '001', "error": e.toString()}));
+            res.end(JSON.stringify({"status": '001', "msg": e.toString()}));
         }
     });
 
