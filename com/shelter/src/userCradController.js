@@ -106,6 +106,39 @@ var init = function(){
 
 
     /**
+     * 获取用户所有卡牌列表
+     */
+    app.get('/areadly/getUserCardInfo', function (req, res) {
+
+        res.writeHead(200, {'Content-Type': 'application/json'});
+        try{
+            var token = req.param("token");
+
+            if(token == null){
+                res.end(JSON.stringify({"status": '002', "msg": "token获取失败"}));
+            }
+            var userId = util.decode(token);
+
+            //获取用户卡组卡牌
+            userCard.getUserCardInfo(userId, function(flag, msg, results){
+                if(flag){
+                    res.write(JSON.stringify({"status": '200', "userCardList":results}));
+                    res.end();
+                    return;
+                }else{
+                    res.end(JSON.stringify({"status": '001', "msg": "没有数据"}));
+                    return;
+                }
+            });
+        }catch (e){
+            res.end(JSON.stringify({"status": '001', "msg": e.toString()}));
+        }
+    });
+
+
+
+
+    /**
      * 获取卡牌信息
      */
     app.get('/areadly/getCardInfo', function (req, res) {
@@ -116,7 +149,7 @@ var init = function(){
             var cardId = req.param("cardId");
 
             if(token == null || cardId == null){
-                res.end(JSON.stringify({"status": '002', "msg": "token获取失败 或者 deckId为空"}));
+                res.end(JSON.stringify({"status": '002', "msg": "token获取失败 或者 cardId为空"}));
             }
             var userId = util.decode(token);
 
