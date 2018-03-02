@@ -1,3 +1,7 @@
+/**
+ * kenan 游戏登陆/注册模块控制器
+ */
+
 var login = require('./dao/LoginDao');
 var util = require('./util.js');
 var app;

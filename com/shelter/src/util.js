@@ -1,3 +1,10 @@
+/**
+ * util
+ * 1.用户登陆token池
+ * 2.加密/解密机
+ * @type {Array}
+ */
+var session = require('express-session');
 
 //token 池
 var tokenPool = [];
@@ -32,5 +39,26 @@ module.exports = {
         var r = str.substring(0,1);
         var num = str.substring(1);
         return ((num/2) >> 1) - r
+    },
+
+
+    /**
+     * 获取token
+     */
+    getToken : function(req){
+        var token;
+
+        //优先寻找参数中携带的token
+        if(req.method == "GET"){
+            token = req.param("token");
+        }else if(req.method == "POST"){
+            token = req.body.token;
+        }
+
+        if(token == null || token == undefined || token == ""){
+            token == req.session.token;
+        }
+
+        return token;
     }
 }

@@ -1,3 +1,12 @@
+/**
+ * 拦截器/中间件   express中间件
+ * session
+ * bodyparser  解析post提交  body携带数据
+ * http登陆拦截器 /areadly
+ * error处理器
+ * @type {session}
+ */
+
 var session = require('express-session');
 var bodyparser = require('body-parser');
 var util = require('../util.js');
@@ -36,11 +45,12 @@ var init = function(){
         }else{
             token = req.body.token;
             console.log("post:" + token);
+        }
 
-            if(token == null || token == undefined){
-                token == req.session.token;
-                console.log("session:" + token);
-            }
+        //session获取token
+        if(token == null || token == undefined){
+            token == req.session.token;
+            console.log("session:" + token);
         }
 
         //校验token有效性

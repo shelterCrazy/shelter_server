@@ -1,3 +1,7 @@
+/**
+ * 用户卡包信息查询
+ */
+
 var mysql = require('mysql');
 var json = require('../properties/mysql.json');
 var fs = require('fs');

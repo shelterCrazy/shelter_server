@@ -1,3 +1,7 @@
+/**
+ * 1.获取卡牌信息
+ * 2.获取用户卡组/卡组卡牌/卡牌信息
+ */
 var userCard = require('./dao/userCardDao');
 var util = require('./util.js');
 var app;

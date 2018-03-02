@@ -1,3 +1,11 @@
+/**
+ * kenan shelter项目主流程 入口
+ * 1.加载http拦截器
+ * 2.加载各种http 功能模块
+ * 3.加载各种socket功能模块
+ * 4.创建全局参数
+ */
+
 var http = require('http');
 var express = require('express');
 var app = express();
