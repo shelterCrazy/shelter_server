@@ -2,8 +2,8 @@
  * kenan 游戏登陆/注册模块控制器
  */
 
-var login = require('./dao/LoginDao');
-var util = require('./util.js');
+var userService = require('../service/UserService');
+var util = require('../util/util');
 var app;
 
 //引入express 对象
@@ -17,9 +17,10 @@ var init = function(){
 
     //展示socketio demo页面
     app.get('/socketIndex/:fileName', function(req, res){
-        var fileName = req.params.fileName;
+        // var fileName = __dirname + '/view/' + req.params.fileName;
+        var fileName = process.cwd() + '/com/shelter/src/view/' + req.params.fileName;
 
-        res.sendFile(__dirname + '/view/' + fileName, function (err) {
+        res.sendFile(fileName, function (err) {
             if (err) {
                 console.log(err);
                 res.status(err.status).send("产生错误:" + err).end();
@@ -37,13 +38,13 @@ var init = function(){
         res.writeHead(200, {'Content-Type': 'application/json'});
         try{
             //方法二  回掉函数方式同步
-            login.userBack(function(flag, results){
+            userService.userBack(function(flag, msg, results){
                 if(flag){
                     res.write(JSON.stringify(results));
                     res.end();
                     return;
                 }else{
-                    res.end(JSON.stringify({"status": '001', "msg": "查无数据"}));
+                    res.end(JSON.stringify({"status": '001', "msg": "查无数据" + msg}));
                     return;
                 }
             });
@@ -62,7 +63,7 @@ var init = function(){
             var password = req.param("password");
 
             //方法二  回掉函数方式同步
-            login.loginBack(userName, password, function(flag, msg, results){
+            userService.loginBack(userName, password, function(flag, msg, results){
                 if(flag){
                     var token = util.encode(results[0].id);
                     req.session.token = token;
@@ -72,7 +73,7 @@ var init = function(){
                     res.end();
                     return;
                 }else{
-                    res.end(JSON.stringify({"status": '001', "msg": "查无数据"}));
+                    res.end(JSON.stringify({"status": '001', "msg": "查无数据" + msg}));
                     return;
                 }
             });
@@ -92,7 +93,7 @@ var init = function(){
 
         try{
             var userName = req.param("userName");
-            login.userNameReCheck(userName, function(flag, msg){
+            userService.userNameReCheck(userName, function(flag, msg){
                 res.end(JSON.stringify({"status": '200', "flag": flag, "msg": msg}));
                 return;
             });
@@ -133,9 +134,14 @@ var init = function(){
                 return;
             }
             //注册
-            login.register(userName,password, function(flag){
-                res.end(JSON.stringify({'status': '200', 'msg': '添加成功'}));
-                return;
+            userService.register(userName,password, function(flag, msg){
+                if(flag){
+                    res.end(JSON.stringify({'status': '200', 'msg': '添加成功'}));
+                    return;
+                }else{
+                    res.end(JSON.stringify({'status': '003', 'msg': msg}));
+                    return;
+                }
             });
 
         }catch(e){

@@ -12,6 +12,7 @@ var tokenPool = [];
 
 module.exports = {
 
+    //token池操作
     push(token, id){
         console.log("util.push  token:" + token + "id:" + id);
         if(tokenPool[id] == undefined){
@@ -43,7 +44,7 @@ module.exports = {
 
 
     /**
-     * 获取token
+     * 获取http请求的token
      */
     getToken : function(req){
         var token;
@@ -56,7 +57,7 @@ module.exports = {
         }
 
         if(token == null || token == undefined || token == ""){
-            token == req.session.token;
+            token = req.session.token;
         }
 
         return token;

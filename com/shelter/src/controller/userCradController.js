@@ -2,8 +2,8 @@
  * 1.获取卡牌信息
  * 2.获取用户卡组/卡组卡牌/卡牌信息
  */
-var userCard = require('./dao/userCardDao');
-var util = require('./util.js');
+var deckService = require('../service/DeckService');
+var util = require('../util/util.js');
 var app;
 
 //引入express 对象
@@ -22,20 +22,20 @@ var init = function(){
 
         res.writeHead(200, {'Content-Type': 'application/json'});
         try{
-            var token = req.param("token");
+            var token = util.getToken(req);
             if(token == null){
                 res.end(JSON.stringify({"status": '002', "msg": "token获取失败"}));
             }
             var userId = util.decode(token);
 
             //方法二  回掉函数方式同步
-            userCard.getUserCard(userId, function(flag, msg, results){
+            deckService.getUserCard(userId, function(flag, msg, results){
                 if(flag){
                     res.write(JSON.stringify({"status": '200', "userCardList":results}));
                     res.end();
                     return;
                 }else{
-                    res.end(JSON.stringify({"status": '001', "msg": "没有数据"}));
+                    res.end(JSON.stringify({"status": '001', "msg": "没有数据" + msg}));
                     return;
                 }
             });
@@ -52,7 +52,7 @@ var init = function(){
 
         res.writeHead(200, {'Content-Type': 'application/json'});
         try{
-            var token = req.param("token");
+            var token = util.getToken(req);
 
             if(token == null){
                 res.end(JSON.stringify({"status": '002', "msg": "token获取失败"}));
@@ -60,7 +60,7 @@ var init = function(){
             var userId = util.decode(token);
 
             //查询用户卡组信息
-            userCard.getUserDeck(userId, function(flag, msg, results){
+            deckService.getUserDeck(userId, function(flag, msg, results){
                 if(flag){
                     res.write(JSON.stringify({"status": '200', "userDeckList":results}));
                     res.end();
@@ -83,7 +83,7 @@ var init = function(){
 
         res.writeHead(200, {'Content-Type': 'application/json'});
         try{
-            var token = req.param("token");
+            var token = util.getToken(req);
             var deckId = req.param("deckId");
 
             if(token == null || deckId == null){
@@ -92,7 +92,7 @@ var init = function(){
             var userId = util.decode(token);
 
             //获取用户卡组卡牌
-            userCard.getUserDeckCard(userId, deckId, function(flag, msg, results){
+            deckService.getUserDeckCard(userId, deckId, function(flag, msg, results){
                 if(flag){
                     res.write(JSON.stringify({"status": '200', "userDeckCardList":results}));
                     res.end();
@@ -116,7 +116,7 @@ var init = function(){
 
         res.writeHead(200, {'Content-Type': 'application/json'});
         try{
-            var token = req.param("token");
+            var token = util.getToken(req);
 
             if(token == null){
                 res.end(JSON.stringify({"status": '002', "msg": "token获取失败"}));
@@ -124,7 +124,7 @@ var init = function(){
             var userId = util.decode(token);
 
             //获取用户卡组卡牌
-            userCard.getUserCardInfo(userId, function(flag, msg, results){
+            deckService.getUserCardInfo(userId, function(flag, msg, results){
                 if(flag){
                     res.write(JSON.stringify({"status": '200', "userCardList":results}));
                     res.end();
@@ -149,7 +149,7 @@ var init = function(){
 
         res.writeHead(200, {'Content-Type': 'application/json'});
         try{
-            var token = req.param("token");
+            var token = util.getToken(req);
             var cardId = req.param("cardId");
 
             if(token == null || cardId == null){
@@ -158,7 +158,7 @@ var init = function(){
             var userId = util.decode(token);
 
             //获取用户卡组卡牌
-            userCard.getCardInfo(cardId, function(flag, msg, results){
+            deckService.getCardInfo(cardId, function(flag, msg, results){
                 if(flag){
                     res.write(JSON.stringify({"status": '200', "cardInfo":results}));
                     res.end();

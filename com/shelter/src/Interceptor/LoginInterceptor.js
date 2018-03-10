@@ -9,7 +9,7 @@
 
 var session = require('express-session');
 var bodyparser = require('body-parser');
-var util = require('../util.js');
+var util = require('../util/util.js');
 
 var app;
 
@@ -49,7 +49,7 @@ var init = function(){
 
         //session获取token
         if(token == null || token == undefined){
-            token == req.session.token;
+            token = req.session.token;
             console.log("session:" + token);
         }
 

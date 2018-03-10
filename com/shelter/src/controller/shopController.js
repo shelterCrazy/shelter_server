@@ -4,8 +4,9 @@
  * @Date 2018/3/1 14:58
  */
 
-var userCard = require('./dao/userCardDao');
-var util = require('./util.js');
+var user = require('../dao/userDao');
+
+var util = require('../util/util.js');
 var app;
 
 //引入express 对象
@@ -37,24 +38,6 @@ var init = function(){
             }
             var userId = util.decode(token);
 
-
-            //获取用户晶尘数量
-
-            //插入用户卡牌列表
-
-            //减少用户晶尘数量
-
-
-            userCard.getUserCard(userId, function(flag, msg, results){
-                if(flag){
-                    res.write(JSON.stringify({"status": '200', "userCardList":results}));
-                    res.end();
-                    return;
-                }else{
-                    res.end(JSON.stringify({"status": '001', "msg": "没有数据"}));
-                    return;
-                }
-            });
         }catch (e){
             res.end(JSON.stringify({"status": '001', "msg": e.toString()}));
         }

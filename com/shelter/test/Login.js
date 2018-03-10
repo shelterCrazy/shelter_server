@@ -1,6 +1,6 @@
 var http = require('http');
 var app = require('express')();
-var login = require('../src/dao/LoginDao');
+var login = require('../src/dao/userDao');
 
 //http连接
 // http.createServer(function (request, response) {
@@ -31,16 +31,16 @@ app.get('/queryAllUser', function (req, res) {
             map.status = 200;
             if(results != null && results.length > 0){
                 map.result = results;
-                map.status = 200;
+                map.status = '200';
             }else{
-                map.status = 002;
+                map.status = '002';
                 map.msg = "登陆失败，用户名或密码错误";
             }
             res.write(JSON.stringify(map));
             res.end();
         });
     }catch (e){
-        res.end(JSON.stringify({"status": 001, "error": e.toString()}));
+        res.end(JSON.stringify({"status": '001', "error": e.toString()}));
     }
 });
 
@@ -59,11 +59,11 @@ app.get('/login', function (req, res) {
                 res.write(JSON.stringify(map));
                 res.end();
             }else{
-                res.end(JSON.stringify({"status": 001, "error": e.toString()}));
+                res.end(JSON.stringify({"status": '001', "error": e.toString()}));
             }
         });
     }catch (e){
-        res.end(JSON.stringify({"status": 001, "error": e.toString()}));
+        res.end(JSON.stringify({"status": '001', "error": e.toString()}));
     }
 });
 

@@ -3,24 +3,23 @@
  */
 
 
-var mysql = require('mysql');
-var json = require('../properties/mysql.json');
-var fs = require('fs');
-var json = JSON.parse(fs.readFileSync(__dirname + "/../properties/mysql.json"));
-
-var connection = mysql.createConnection({
-    host     : json.host,
-    user     : json.user,
-    password : json.password,
-    database : json.database
-});
-connection.connect();
+// var mysql = require('mysql');
+// var fs = require('fs');
+// var json = JSON.parse(fs.readFileSync(__dirname + "/../properties/mysql.json"));
+//
+// var connection = mysql.createConnection({
+//     host     : json.host,
+//     user     : json.user,
+//     password : json.password,
+//     database : json.database
+// });
+// connection.connect();
 
 
 //登陆查询  回掉函数方式
-exports.loginBack = function(userName, password, fn){
+exports.loginBack = function(connection, userName, password, fn){
     try {
-        connection.query('select * from user where user_name="' + userName + '" and password="' + password + '"',
+        connection.query('select * from user where user_name=? and password=?', [userName,password],
             function (error, results, fields) {
                 if (error) throw error;
 
@@ -40,9 +39,9 @@ exports.loginBack = function(userName, password, fn){
 
 
 //检查用户名是否重复
-exports.userNameReCheck = function(userName, fn){
+exports.userNameReCheck = function(connection, userName, fn){
     try {
-        connection.query('select id from user where user_name="' + userName + '"',
+        connection.query('select id from user where user_name=?', [userName],
             function (error, results, fields) {
                 if (error) throw error;
 
@@ -62,7 +61,7 @@ exports.userNameReCheck = function(userName, fn){
 
 
 //获取所有用户信息  回掉函数方式
-exports.userBack = function(fn){
+exports.userBack = function(connection, fn){
     try {
         connection.query('select * from user',
             function (error, results, fields) {
@@ -70,7 +69,7 @@ exports.userBack = function(fn){
 
                 if (results != null && results.length > 0) {
                     console.log(JSON.stringify(results))
-                    fn(true, results);
+                    fn(true, "ok", results);
                 }
             });
     } catch (e) {
@@ -81,7 +80,7 @@ exports.userBack = function(fn){
 
 
 //注册用户
-exports.register = function(userName, password, fn){
+exports.register = function(connection, userName, password, fn){
     try {
         connection.query('insert into user(user_name,password)values(?,?)', [userName, password],
             function (error, results) {
@@ -95,7 +94,41 @@ exports.register = function(userName, password, fn){
                 }
             });
     } catch (e) {
+        console.log("新增错误");
+        fn(false, '新增异常'+e.stack);
+    }
+}
+
+
+/**
+ * 查询用户信息(游戏信息)
+ */
+exports.getUserInfo = function(connection, userId, fn){
+    try {
+        connection.query('select * from user_info where user_id=', [userId],
+            function (error, results) {
+                if (error) throw error;
+
+                if (results != null && results.length() > 0) {
+                    console.log(JSON.stringify(results))
+                    fn(true, results);
+                }else{
+                    fn(false, results);
+                }
+            });
+    } catch (e) {
         console.log("查询错误");
         fn(false, '查询异常'+e.stack);
     }
+}
+
+
+/**
+ *
+ * @param cardId
+ * @param userId
+ * @param fn
+ */
+exports.synthetiseCard = function(connection, cardId, userId, fn){
+
 }

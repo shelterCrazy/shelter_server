@@ -2,18 +2,17 @@
  * 用户卡包信息查询
  */
 
-var mysql = require('mysql');
-var json = require('../properties/mysql.json');
-var fs = require('fs');
-var json = JSON.parse(fs.readFileSync(__dirname + "/../properties/mysql.json"));
-
-var connection = mysql.createConnection({
-    host     : json.host,
-    user     : json.user,
-    password : json.password,
-    database : json.database
-});
-connection.connect();
+// var mysql = require('mysql');
+// var fs = require('fs');
+// var json = JSON.parse(fs.readFileSync(__dirname + "/../properties/mysql.json"));
+//
+// var connection = mysql.createConnection({
+//     host     : json.host,
+//     user     : json.user,
+//     password : json.password,
+//     database : json.database
+// });
+// connection.connect();
 
 
 /**
@@ -21,7 +20,7 @@ connection.connect();
  * @param userId
  * @param fn
  */
-exports.getUserCard = function(userId, fn){
+exports.getUserCard = function(connection, userId, fn){
     try {
         connection.query('select p.* from user_card_package p where p.user_id = ?', userId,
             function (error, results, fields) {
@@ -47,7 +46,7 @@ exports.getUserCard = function(userId, fn){
  * @param userId
  * @param fn
  */
-exports.getUserDeck = function(userId, fn){
+exports.getUserDeck = function(connection, userId, fn){
     try {
         connection.query('select d.* from user_deck d where d.user_id = ?', userId,
             function (error, results, fields) {
@@ -74,7 +73,7 @@ exports.getUserDeck = function(userId, fn){
  * @param deckId
  * @param fn
  */
-exports.getUserDeckCard = function(userId, deckId, fn){
+exports.getUserDeckCard = function(connection, userId, deckId, fn){
     try {
         connection.query('select t.* from user_deck_card t where t.deck_id = ? and t.user_id = ?', [deckId, userId],
             function (error, results, fields) {
@@ -100,7 +99,7 @@ exports.getUserDeckCard = function(userId, deckId, fn){
  * @param cardId
  * @param fn
  */
-exports.getUserCardInfo = function(userId, fn){
+exports.getUserCardInfo = function(connection, userId, fn){
     try {
         connection.query('select t.* from user_card t where t.user_id = ?', [userId],
             function (error, results, fields) {
@@ -126,7 +125,7 @@ exports.getUserCardInfo = function(userId, fn){
  * @param cardId
  * @param fn
  */
-exports.getCardInfo = function(cardId, fn){
+exports.getCardInfo = function(connection, cardId, fn){
     try {
         connection.query('select t.* from card_info t where t.id = ?', [cardId],
             function (error, results, fields) {

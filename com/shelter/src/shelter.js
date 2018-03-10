@@ -5,22 +5,28 @@
  * 3.加载各种socket功能模块
  * 4.创建全局参数
  */
-
+//基本js
 var http = require('http');
 var express = require('express');
 var app = express();
-
 var socket = require('socket.io');
-var login = require('./dao/LoginDao');
 
-var index = require('./indexControllor');
-var userCard = require('./userCradController');
-var interceptor = require('./Interceptor/LoginInterceptor');
+//功能模块
+var index = require('./controller/indexControllor');  //登陆注册
+var userCard = require('./controller/userCradController');  //用户卡牌
+var interceptor = require('./Interceptor/LoginInterceptor');   //拦截器中间件
+var shop = require('./controller/shopController'); //商店相关
 
-var util = require('./util.js');
+//公共服务
+var util = require('./util/util');
+var connectUtil = require('./util/ConnectUtil');
+
+//业务Dao 以后要改
+var login = require('./dao/userDao');
 
 
 
+/**  初始化 */
 //应用监听端口
 var port = 3000;
 var server = http.Server(app);
@@ -30,11 +36,8 @@ var io =  socket(server,{
     pingInterval: 10000
 });
 
-
 //静态资源
 app.use(express.static('public'));
-
-
 
 //房间信息记录
 var roomsInfo = []
@@ -48,16 +51,18 @@ var msgEnum= {
 }
 
 
-
-
 //引入外界js的方式分流书写app功能
+//初始化数据库链接
+connectUtil.init();
 //拦截器
 interceptor(app);
 //注册登陆功能信息
 index(app);
 //用户卡牌包-卡牌信息
 userCard(app);
-
+//商店相关
+shop(app);
+/** 初始化结束 */
 
 
 
