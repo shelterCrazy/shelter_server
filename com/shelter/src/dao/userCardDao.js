@@ -120,6 +120,62 @@ exports.getUserCardInfo = function(connection, userId, fn){
 }
 
 
+
+/**
+ * 删除用户卡牌列表 卡牌
+ * @param cardId
+ * @param fn
+ */
+exports.deleteUserCard = function(connection, userId, cardId, userCardId, fn){
+    try {
+        connection.query('delete from user_card where id=? and user_id=? and card_id=?', [userCardId,userId,cardId],
+            function (error, results, fields) {
+                if (error) throw error;
+
+                if (results != null && results.affectedRows != 0) {
+                    console.log(JSON.stringify(results))
+                    fn(true, 'Ok', results);
+                } else {
+                    console.log("删除数据行数0 userId" + userId + " cardId" + cardId + " userCardId" + userCardId);
+                    fn(false, '删除数据行数0', results);
+                }
+            });
+    } catch (e) {
+        console.log("删除数据错误");
+        fn(false, '删除数据异常'+e.stack);
+    }
+}
+
+
+
+/**
+ * 删除用户卡组 卡牌
+ * @param cardId
+ * @param fn
+ */
+exports.deleteUserDeckCard = function(connection, userId, cardId, userCardId, fn){
+    try {
+        connection.query('delete from user_deck_card where user_id=? and card_id=? and user_card_id=?', [userId,cardId,userCardId],
+            function (error, results, fields) {
+                if (error) throw error;
+
+                if (results != null && results.affectedRows != 0) {
+                    console.log(JSON.stringify(results))
+                    fn(true, 'Ok', results);
+                } else {
+                    console.log("删除数据行数0 userId" + userId + " cardId" + cardId + " userCardId" + userCardId);
+                    fn(false, '删除数据行数0', results);
+                }
+            });
+    } catch (e) {
+        console.log("删除数据错误");
+        fn(false, '删除数据异常'+e.stack);
+    }
+}
+
+
+
+
 /**
  * 查询某张卡牌信息
  * @param cardId

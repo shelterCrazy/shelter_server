@@ -98,7 +98,6 @@ exports.register = function(userName, password, fn){
  */
 exports.synthetiseCard = function(cardId, userId, fn){
 
-
     try{
         connectUtil.getMaster(function (master) {
             if(master == null){
@@ -111,7 +110,6 @@ exports.synthetiseCard = function(cardId, userId, fn){
                 if (err) {
                     throw err;
                 }
-
 
                 //获取用户晶尘数量
                 userDao.getUserInfo(master, userId, function (flag, msg, rs) {
@@ -176,6 +174,84 @@ exports.synthetiseCard = function(cardId, userId, fn){
         fn(false, '合成卡牌异常' + e.stack);
     }
 }
+
+
+/**
+ * @主要功能:   分解卡牌
+ * @author kenan
+ * @Date 2018/3/12 9:57
+ * @param cardId
+ * @param userId
+ * @param userCardId  用户卡牌列表ID
+ * @param fn
+ */
+exports.decomposeCard = function(cardId, userId, userCardId, fn){
+    try{
+        connectUtil.getMaster(function (master) {
+            if(master == null){
+                fn(false, '获取链接失败');
+                return ;
+            }
+            //开启事务
+            master.beginTransaction(function (err) {
+                if (err) {
+                    throw err;
+                }
+
+                //查看卡牌信息   获取卡牌晶尘数
+                userCardDao.getCardInfo(master, cardId, function (flag, msg, rs) {
+                    if(flag) {
+                        var ashRequired = rs[0].ash_required;
+                        //删除用户卡牌列表中卡牌   where userid cardid usercardid 全部吻合  否则为错误信息没有这张卡牌
+                        userCardDao.deleteUserCard(master, userId, cardId, userCardId, function(flag, msg, rs){
+                            if(flag){
+                                //删除用户卡组卡牌  允许删除行数为0  但不能有异常
+                                userCardDao.deleteUserDeckCard(master, userId, cardId, userCardId, function(flag, msg, rs){
+                                    if(rs != null && rs != undefined && rs.affectedRows >= 0){
+                                        //增加用户晶尘
+                                        userDao.updateUserAsh(master, ashRequired, userId, function(flag, msg, rs){
+                                            if(flag){
+                                                //没问题就提交
+                                                console.log("transaction commit");
+                                                master.commit(function(err){
+                                                    if(err){
+                                                        rollBack(master);
+                                                    }
+                                                    master.release();
+                                                    fn(true, 'OK',rs);
+                                                });
+                                            }else{
+                                                rollBack(master);
+                                                master.release();
+                                                fn(false, '合成卡牌异常' + msg);
+                                            }
+                                        });
+                                    }else{
+                                        rollBack(master);
+                                        master.release();
+                                        fn(false, "删除用户卡组卡牌异常" + msg, rs);
+                                    }
+                                });
+                            }else{
+                                rollBack(master);
+                                master.release();
+                                fn(false, "用户没有这张卡", rs);
+                            }
+                        });
+                    }else{
+                        rollBack(master);
+                        master.release();
+                        fn(false, "没有查到卡牌信息", rs);
+                    }
+                });
+            });
+        });
+    }catch (e){
+        console.log("合成卡牌错误" + e.stack);
+        fn(false, '合成卡牌异常' + e.stack);
+    }
+}
+
 
 
 //回滚操作
