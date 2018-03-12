@@ -16,13 +16,14 @@ var index = require('./controller/indexControllor');  //登陆注册
 var userCard = require('./controller/userCradController');  //用户卡牌
 var interceptor = require('./Interceptor/LoginInterceptor');   //拦截器中间件
 var shop = require('./controller/shopController'); //商店相关
+var userService = require('./service/UserService');  //用户服务
 
 //公共服务
 var util = require('./util/util');
 var connectUtil = require('./util/ConnectUtil');
 
 //业务Dao 以后要改
-var login = require('./dao/userDao');
+// var login = require('./dao/userDao');
 
 
 
@@ -119,20 +120,20 @@ index.on("connection", function (socket) {
         var userName = data.userName;
         var password = data.password;
 
-
-        //回掉函数方式同步
-        login.loginBack(userName, password, function(flag, msg, results){
+        //查询用户服务
+        userService.loginBack(userName, password, function (flag, msg, results) {
             if(flag){
                 console.log('local socket.id ' + socket.id)
                 var token = util.encode(results[0].id);
                 socket.emit('loginResult',{'status':msgEnum.success,'msg':msg, 'results': token});
 
+                //登陆token加入token池
                 util.push(token, results[0].id);
             }else{
                 console.log('local socket.id ' + socket.id)
                 socket.emit('loginResult',{'status':msgEnum.fail,'msg':msg});
             }
-        })
+        });
     });
 
     //广播信息

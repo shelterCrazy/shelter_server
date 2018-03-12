@@ -88,9 +88,9 @@ exports.register = function(connection, userName, password, fn){
 
                 if (results != null && results.insertId != 0) {
                     console.log(JSON.stringify(results))
-                    fn(true);
+                    fn(true,"ok",results);
                 }else{
-                    fn(false);
+                    fn(false, "插入条数0");
                 }
             });
     } catch (e) {
@@ -105,15 +105,15 @@ exports.register = function(connection, userName, password, fn){
  */
 exports.getUserInfo = function(connection, userId, fn){
     try {
-        connection.query('select * from user_info where user_id=', [userId],
+        connection.query('select * from user_info where user_id=?', [userId],
             function (error, results) {
                 if (error) throw error;
 
-                if (results != null && results.length() > 0) {
+                if (results != null && results.length > 0) {
                     console.log(JSON.stringify(results))
-                    fn(true, results);
+                    fn(true, "ok", results);
                 }else{
-                    fn(false, results);
+                    fn(false, "没查到", results);
                 }
             });
     } catch (e) {
@@ -124,11 +124,29 @@ exports.getUserInfo = function(connection, userId, fn){
 
 
 /**
- *
- * @param cardId
+ * @主要功能:   修改用户晶尘数量
+ * @author kenan
+ * @Date 2018/3/11 23:43
+ * @param num      修改晶尘数量  +增加   -减少
  * @param userId
  * @param fn
  */
-exports.synthetiseCard = function(connection, cardId, userId, fn){
+exports.updateUserAsh = function(connection, num, userId, fn){
 
+    try {
+        connection.query('update user_info set ash_number = ash_number + ? where user_id = ? and (ash_number + ?) >= 0', [num,userId,num],
+            function (error, results) {
+                if (error) throw error;
+
+                if (results != null && results.affectedRows != 0) {
+                    console.log(JSON.stringify(results))
+                    fn(true, "ok", results);
+                }else{
+                    fn(false, "修改失败/晶尘不足", results);
+                }
+            });
+    } catch (e) {
+        console.log("修改错误");
+        fn(false, '修改错误'+e.stack);
+    }
 }

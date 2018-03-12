@@ -20,6 +20,11 @@ var init = function(){
         // var fileName = __dirname + '/view/' + req.params.fileName;
         var fileName = process.cwd() + '/com/shelter/src/view/' + req.params.fileName;
 
+        if(fileName == null){
+            res.writeHead(200, {'Content-Type': 'application/json'});
+            res.end(JSON.stringify({"status": '001', "msg": ":fileName没有值"}));
+        }
+
         res.sendFile(fileName, function (err) {
             if (err) {
                 console.log(err);
@@ -134,7 +139,7 @@ var init = function(){
                 return;
             }
             //注册
-            userService.register(userName,password, function(flag, msg){
+            userService.register(userName,password, function(flag, msg, rs){
                 if(flag){
                     res.end(JSON.stringify({'status': '200', 'msg': '添加成功'}));
                     return;

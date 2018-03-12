@@ -2,6 +2,7 @@
  * 用户信息服务
  */
 var userDao = require('../dao/userDao');
+var userCardDao = require('../dao/userCardDao');
 var connectUtil = require('../util/ConnectUtil');
 var util = require('../util/util');
 
@@ -15,9 +16,7 @@ exports.loginBack = function(userName, password, fn){
                 return ;
             }
             userDao.loginBack(slave, userName, password, function(flag, msg, results){
-                if(slave != null && slave != undefined){
-                    slave.release();
-                }
+                slave.release();
                 fn(flag, msg, results);
                 return ;
             });
@@ -38,9 +37,7 @@ exports.userNameReCheck = function(userName, fn){
                 return ;
             }
             userDao.userNameReCheck(slave, userName, function (flag, msg) {
-                if (slave != null && slave != undefined) {
-                    slave.release();
-                }
+                slave.release();
                 fn(flag, msg);
             });
         });
@@ -60,9 +57,7 @@ exports.userBack = function(fn){
                 return ;
             }
             userDao.userBack(slave, function (flag, msg, results) {
-                if(slave != null && slave != undefined){
-                    slave.release();
-                }
+                slave.release();
                 fn(flag, msg, results);
             });
         });
@@ -82,9 +77,7 @@ exports.register = function(userName, password, fn){
                 return ;
             }
             userDao.register(master, function (flag) {
-                if(master != null && master != undefined){
-                    master.release();
-                }
+                master.release();
                 fn(flag, "ok");
             });
         });
@@ -96,15 +89,101 @@ exports.register = function(userName, password, fn){
 }
 
 /**
- * 
+ * @主要功能:   合成卡牌
+ * @author kenan
+ * @Date 2018/3/11 19:51
  * @param cardId
  * @param userId
  * @param fn
  */
 exports.synthetiseCard = function(cardId, userId, fn){
-    //获取用户晶尘数量
 
-    //插入用户卡牌列表
 
-    //减少用户晶尘数量
+    try{
+        connectUtil.getMaster(function (master) {
+            if(master == null){
+                fn(false, '获取链接失败');
+                return ;
+            }
+
+            //开启事务
+            master.beginTransaction(function (err) {
+                if (err) {
+                    throw err;
+                }
+
+
+                //获取用户晶尘数量
+                userDao.getUserInfo(master, userId, function (flag, msg, rs) {
+                    if(flag){
+                        var ashneed = rs[0].ash_number; //晶尘
+
+                        userCardDao.getCardInfo(master, cardId, function (flag, msg, rs) {
+                            if(flag){
+                                var ashRequired = rs[0].ash_required;
+
+                                //用户晶尘>卡牌合成需求晶尘数量
+                                if(Number(ashneed) >= Number(ashRequired)){
+
+                                    //插入用户卡牌列表
+                                    userCardDao.addUserCard(master, userId, cardId, function(flag, msg, rs){
+                                        if(flag){
+                                            //减少用户晶尘数量
+                                            userDao.updateUserAsh(master, -Number(ashRequired), userId, function(flag, msg, rs){
+                                                if(flag){
+                                                    //没问题就提交
+                                                    console.log("transaction commit");
+                                                    master.commit(function(err){
+                                                        if(err){
+                                                            rollBack(master);
+                                                        }
+                                                        master.release();
+                                                        fn(true, 'OK');
+                                                    });
+                                                }else{
+                                                    rollBack(master);
+                                                    master.release();
+                                                    fn(false, '合成卡牌异常' + msg);
+                                                }
+                                            });
+                                        }else{
+                                            rollBack(master);
+                                            master.release();
+                                            fn(false, '合成卡牌异常' + msg);
+                                        }
+                                    });
+                                }else{
+                                    rollBack(master);
+                                    master.release();
+                                    fn(false, '晶尘不足');
+                                }
+                            }else{
+                                rollBack(master);
+                                master.release();
+                                fn(false, '合成卡牌异常' + msg);
+                            }
+                        });
+                    }else{
+                        rollBack(master);
+                        master.release();
+                        fn(false, '合成卡牌异常' + msg);
+                    }
+                });
+            });
+        });
+    }catch (e){
+        console.log("合成卡牌错误" + e.stack);
+        fn(false, '合成卡牌异常' + e.stack);
+    }
+}
+
+
+//回滚操作
+var rollBack = function(conn){
+    console.log("transaction rollBack");
+    conn.rollback(function(err){  //用户卡牌插入失败回滚
+        if(err){
+            throw err;
+        }
+    });
 }

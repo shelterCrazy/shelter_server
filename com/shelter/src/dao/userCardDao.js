@@ -135,12 +135,42 @@ exports.getCardInfo = function(connection, cardId, fn){
                     console.log(JSON.stringify(results))
                     fn(true, 'Ok', results);
                 } else {
-                    console.log("查询无结果");
-                    fn(false, '查询异常', results);
+                    console.log("查询卡牌无结果");
+                    fn(false, '查询卡牌无结果', results);
                 }
             });
     } catch (e) {
-        console.log("查询错误");
-        fn(false, '查询异常'+e.stack);
+        console.log("查询卡牌信息异常" + e.stack);
+        fn(false, '查询卡牌信息异常'+e.stack);
+    }
+}
+
+
+/**
+ * @主要功能:   用户新增一张卡牌
+ * @author kenan
+ * @Date 2018/3/11 22:22
+ * @param connection
+ * @param userId
+ * @param cardId
+ * @param fn
+ */
+exports.addUserCard = function(connection, userId, cardId, fn){
+    try {
+        connection.query('insert into user_card(user_id,card_id,create_date)values(?,?,?)', [userId,cardId,new Date()],
+            function (error, results, fields) {
+                if (error) throw error;
+
+                if (results != null && results.insertId != 0) {
+                    console.log(JSON.stringify(results))
+                    fn(true, 'Ok', results);
+                } else {
+                    console.log("用户新增卡牌失败");
+                    fn(false, '用户新增卡牌失败', results);
+                }
+            });
+    } catch (e) {
+        console.log("用户新增卡牌失败" + e.stack);
+        fn(false, '用户新增卡牌失败'+e.stack);
     }
 }

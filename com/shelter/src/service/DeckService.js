@@ -20,9 +20,7 @@ exports.getUserCard = function(userId, fn){
                 return ;
             }
             userCardDao.getUserCard(slave, userId, function(flag, msg, results){
-                if(slave != null && slave != undefined){
-                    slave.release();
-                }
+                slave.release();
                 fn(flag, msg, results);
             });
         });
@@ -46,9 +44,7 @@ exports.getUserDeck = function(userId, fn){
                 return ;
             }
             userCardDao.getUserDeck(slave, userId, function(flag, msg, results){
-                if(slave != null && slave != undefined){
-                    slave.release();
-                }
+                slave.release();
                 fn(flag, msg, results);
             });
         });
@@ -73,9 +69,7 @@ exports.getUserDeckCard = function(userId, deckId, fn){
                 return ;
             }
             userCardDao.getUserDeckCard(slave, userId, deckId, function(flag, msg, results){
-                if(slave != null && slave != undefined){
-                    slave.release();
-                }
+                slave.release();
                 fn(flag, msg, results);
             });
         });
@@ -99,9 +93,7 @@ exports.getUserCardInfo = function(userId, fn){
                 return ;
             }
             userCardDao.getUserCardInfo(slave, userId, function(flag, msg, results){
-                if(slave != null && slave != undefined){
-                    slave.release();
-                }
+                slave.release();
                 fn(flag, msg, results);
             });
         });
@@ -125,9 +117,7 @@ exports.getCardInfo = function(cardId, fn){
                 return ;
             }
             userCardDao.getCardInfo(slave, cardId, function(flag, msg, results){
-                if(slave != null && slave != undefined){
-                    slave.release();
-                }
+                slave.release();
                 fn(flag, msg, results);
             });
         });

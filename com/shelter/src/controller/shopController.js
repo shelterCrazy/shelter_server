@@ -3,9 +3,7 @@
  * @author kenanCrazy
  * @Date 2018/3/1 14:58
  */
-
-var user = require('../dao/userDao');
-
+var userService = require('../service/UserService');
 var util = require('../util/util.js');
 var app;
 
@@ -37,6 +35,15 @@ var init = function(){
                 res.end(JSON.stringify({"status": '002', "msg": "token获取失败"}));
             }
             var userId = util.decode(token);
+
+            //合成卡牌服务
+            userService.synthetiseCard(cardId, userId, function(flag, msg, results){
+                if(flag){
+                    res.end(JSON.stringify({"status":"200", "msg":"合成成功", "userInfo" : results}))
+                }else{
+                    res.end(JSON.stringify({"status": '003', "msg": "合成失败:" + msg}));
+                }
+            });
 
         }catch (e){
             res.end(JSON.stringify({"status": '001', "msg": e.toString()}));
