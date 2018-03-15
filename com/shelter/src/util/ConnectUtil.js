@@ -5,15 +5,14 @@
  *
  */
 var mysql = require('mysql');
-var fs = require('fs');
-var json = JSON.parse(fs.readFileSync(__dirname + "/../properties/mysql.json"));
+var mysqlconf = require("../properties/mysqlConfig");
 var poolCluster;
 
 
 
 module.exports = {
     init : function(){
-        init();
+        init("dev");
     },
     getMaster : function(fn){
 
@@ -48,10 +47,16 @@ module.exports = {
 }
 
 
-var init = function(){
+var init = function(conf){
 
+    var conf;
     // multiple hosts connection
-    poolCluster = mysql.createPoolCluster({
+    if(conf == "dev"){
+        conf = mysqlconf.dev;
+    }else if(conf == "release"){
+        conf = mysqlconf.release;
+    }
+    poolCluster = mysql.createPoolCluster(conf.cluster);
         /**
          * canRetry: If true, PoolCluster will attempt to reconnect when connection fails. (Default: true)
          * removeNodeErrorCount: If connection fails, node's errorCount increases. When errorCount is greater than removeNodeErrorCount, remove a node in the PoolCluster. (Default: 5)
@@ -62,45 +67,47 @@ var init = function(){
          *    ORDER: Select the first node available unconditionally.
          */
 
-        canRetry : json.cluster.canRetry,  //链接失败自动重新链  default true
-        removeNodeErrorCount : json.cluster.removeNodeErrorCount,  //链接失败一定次数会放弃这个链接  失败次数  default 5   失败5次认为节点失效
-        restoreNodeTimeout : json.cluster.restoreNodeTimeout,  //如果认定节点失效   间隔多长时间再次链接这个节点  default 0  设置为0  节点一旦失效永不再使用
-        defaultSelector : json.cluster.defaultSelector    //选择器  默认RR轮询使用   还有随机 和指定优先使用第一个链接
-    });
+    //     canRetry : json.cluster.canRetry,  //链接失败自动重新链  default true
+    //     removeNodeErrorCount : json.cluster.removeNodeErrorCount,  //链接失败一定次数会放弃这个链接  失败次数  default 5   失败5次认为节点失效
+    //     restoreNodeTimeout : json.cluster.restoreNodeTimeout,  //如果认定节点失效   间隔多长时间再次链接这个节点  default 0  设置为0  节点一旦失效永不再使用
+    //     defaultSelector : json.cluster.defaultSelector    //选择器  默认RR轮询使用   还有随机 和指定优先使用第一个链接
+    // });
 
 
     //master配置
-    poolCluster.add('master', {
-        host     : json.master.host,
-        user     : json.master.user,
-        password : json.master.password,
-        database : json.master.database,
-
-        /**
-         * acquireTimeout: The milliseconds before a timeout occurs during the connection acquisition. This is slightly different from connectTimeout, because acquiring a pool connection does not always involve making a connection. (Default: 10000)
-         * waitForConnections: Determines the pool's action when no connections are available and the limit has been reached. If true, the pool will queue the connection request and call it when one becomes available. If false, the pool will immediately call back with an error. (Default: true)
-         * connectionLimit: The maximum number of connections to create at once. (Default: 10)
-         * queueLimit: The maximum number of connection requests the pool will queue before returning an error from getConnection. If set to 0, there is no limit to the number of queued connection requests. (Default: 0)
-         */
-        acquireTimeout      : json.acquireTimeout, //获取链接超时 default 10000
-        waitForConnections  : json.waitForConnections, //连接池已满 是否排队等待(false就是立刻回调返回error)  default true
-        connectionLimit     : json.connectionLimit,   //连接池一次创建多少链接  default 10
-        queueLimit          : json.queueLimit  //最大等待队列  waitForConnections设置为 true 时额外链接将进入等待队列 设置为0无限制   default 0
-    });
+    poolCluster.add('master', conf.master);
+    // poolCluster.add('master', {
+    //     host     : json.master.host,
+    //     user     : json.master.user,
+    //     password : json.master.password,
+    //     database : json.master.database,
+    //
+    //     /**
+    //      * acquireTimeout: The milliseconds before a timeout occurs during the connection acquisition. This is slightly different from connectTimeout, because acquiring a pool connection does not always involve making a connection. (Default: 10000)
+    //      * waitForConnections: Determines the pool's action when no connections are available and the limit has been reached. If true, the pool will queue the connection request and call it when one becomes available. If false, the pool will immediately call back with an error. (Default: true)
+    //      * connectionLimit: The maximum number of connections to create at once. (Default: 10)
+    //      * queueLimit: The maximum number of connection requests the pool will queue before returning an error from getConnection. If set to 0, there is no limit to the number of queued connection requests. (Default: 0)
+    //      */
+    //     acquireTimeout      : json.master.acquireTimeout, //获取链接超时 default 10000
+    //     waitForConnections  : json.master.waitForConnections, //连接池已满 是否排队等待(false就是立刻回调返回error)  default true
+    //     connectionLimit     : json.master.connectionLimit,   //连接池一次创建多少链接  default 10
+    //     queueLimit          : json.master.queueLimit  //最大等待队列  waitForConnections设置为 true 时额外链接将进入等待队列 设置为0无限制   default 0
+    // });
 
 
     //slave配置
-    for(var i=0; i<json.slave.length; i++){
-        poolCluster.add(json.slave[i].name, {
-            host     : json.slave[i].host,
-            user     : json.slave[i].user,
-            password : json.slave[i].password,
-            database : json.slave[i].database,
-            acquireTimeout      : json.slave[i].acquireTimeout, //获取链接超时 default 10000
-            waitForConnections  : json.slave[i].waitForConnections, //连接池已满 是否排队等待(false就是立刻回调返回error)  default true
-            connectionLimit     : json.slave[i].connectionLimit,   //连接池一次创建多少链接  default 10
-            queueLimit          : json.slave[i].queueLimit  //最大等待队列  waitForConnections设置为 true 时额外链接将进入等待队列 设置为0无限制   default 0
-        });
+    for(var i=0; i<conf.slave.length; i++){
+        poolCluster.add(conf.slave[i].name, conf.slave[i]);
+        // poolCluster.add(json.slave[i].name, {
+        //     host     : json.slave[i].host,
+        //     user     : json.slave[i].user,
+        //     password : json.slave[i].password,
+        //     database : json.slave[i].database,
+        //     acquireTimeout      : json.slave[i].acquireTimeout, //获取链接超时 default 10000
+        //     waitForConnections  : json.slave[i].waitForConnections, //连接池已满 是否排队等待(false就是立刻回调返回error)  default true
+        //     connectionLimit     : json.slave[i].connectionLimit,   //连接池一次创建多少链接  default 10
+        //     queueLimit          : json.slave[i].queueLimit  //最大等待队列  waitForConnections设置为 true 时额外链接将进入等待队列 设置为0无限制   default 0
+        // });
     }
 
 
@@ -112,11 +119,11 @@ var init = function(){
     poolCluster._nodes["master"].pool.on('release', function (connection) {
         console.log('Connection %d released', connection.threadId);
     });
-    for(var i=0; i<json.slave.length; i++){
-        poolCluster._nodes[json.slave[i].name].pool.on('acquire', function (connection) {
+    for(var i=0; i<conf.slave.length; i++){
+        poolCluster._nodes[conf.slave[i].name].pool.on('acquire', function (connection) {
             console.log('Connection %d acquired', connection.threadId);
         });
-        poolCluster._nodes[json.slave[i].name].pool.on('release', function (connection) {
+        poolCluster._nodes[conf.slave[i].name].pool.on('release', function (connection) {
             console.log('Connection %d released', connection.threadId);
         });
     }

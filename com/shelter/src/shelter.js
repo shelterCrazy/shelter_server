@@ -16,7 +16,6 @@ var index = require('./controller/indexControllor');  //登陆注册
 var userCard = require('./controller/userCradController');  //用户卡牌
 var interceptor = require('./Interceptor/LoginInterceptor');   //拦截器中间件
 var shop = require('./controller/shopController'); //商店相关
-var userService = require('./service/UserService');  //用户服务
 
 //公共服务
 var util = require('./util/util');
@@ -24,6 +23,7 @@ var connectUtil = require('./util/ConnectUtil');
 
 //业务Dao 以后要改
 // var login = require('./dao/userDao');
+var userService = require('./service/UserService');  //用户服务
 
 
 

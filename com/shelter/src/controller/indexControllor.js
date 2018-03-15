@@ -23,7 +23,7 @@ var init = function(){
             res.writeHead(200, {'Content-Type': 'application/json'});
             res.end(JSON.stringify({"status": '001', "msg": ":fileName没有值"}));
         }
-        console.log(process.cwd());
+        console.log("***********process.cwd()" + process.cwd());
         var fileName = process.cwd() + '/com/shelter/src/view/' + req.params.fileName;
 
         res.sendFile(fileName, function (err) {
