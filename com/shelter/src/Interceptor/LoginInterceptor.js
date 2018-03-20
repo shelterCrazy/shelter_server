@@ -10,6 +10,7 @@
 var session = require('express-session');
 var bodyparser = require('body-parser');
 var util = require('../util/util.js');
+var logger = require('../util/logFactroy').getInstance();
 
 var app;
 
@@ -36,21 +37,21 @@ var init = function(){
     //登陆拦截中间件
     app.use('/areadly', function (req, res, next) {
         var token;
-        console.log('Request Type:', req.method);
+        logger.debug('Request Type:', req.method);
 
         //get post session获取token
         if(req.method == "GET" || req.method == "get"){
             token = req.param("token");
-            console.log("get:" + token);
+            logger.debug("get:" + token);
         }else{
             token = req.body.token;
-            console.log("post:" + token);
+            logger.debug("post:" + token);
         }
 
         //session获取token
         if(token == null || token == undefined){
             token = req.session.token;
-            console.log("session:" + token);
+            logger.debug("session:" + token);
         }
 
         //校验token有效性
@@ -60,7 +61,7 @@ var init = function(){
             return;
         }else{
             var id = util.decode(token);
-            console.log("id:" + id + " util.get(id):" + util.get(id));
+            logger.debug("id:" + id + " util.get(id):" + util.get(id));
             if(util.get(id) != null){
                 next();
             }else{
@@ -74,7 +75,7 @@ var init = function(){
 
     //错误处理中间件
     app.use(function(err, req, res, next) {
-        console.error(err.stack);
+        logger.error(err.stack);
         res.status(500).send(JSON.stringify({"status":"001", "msg":"发生错误:" + err.stack}));
     });
 }

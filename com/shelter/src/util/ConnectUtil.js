@@ -11,8 +11,8 @@ var poolCluster;
 
 
 module.exports = {
-    init : function(){
-        init("dev");
+    init : function(config){
+        init(config);
     },
     getMaster : function(fn){
 

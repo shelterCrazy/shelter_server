@@ -1,10 +1,10 @@
 
 module.exports = {
   appenders:{
-    warnLog:{
+    InfoLog:{
       type:"file",
-      filename:"shelterWarn.log",
-      maxLogSize: 1024*1024
+      filename:"//var/log/shelter_log.d/shelterInfo.log",
+      maxLogSize: 1024*1024*10
     },
     AllLog:{
       type:"file",
@@ -17,7 +17,7 @@ module.exports = {
       appenders:[
         "warnLog"
       ],
-      level:"error"
+      level:"warn"
     },
     dev:{
       appenders:[
@@ -27,9 +27,9 @@ module.exports = {
     },
     release:{
       appenders:[
-        "warnLog"
+        "InfoLog",
       ],
-      level:"warn"
+      level:"info"
     }
   }
 }

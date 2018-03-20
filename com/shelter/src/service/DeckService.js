@@ -3,6 +3,8 @@
  */
 var userCardDao = require('../dao/userCardDao');
 var connectUtil = require('../util/ConnectUtil');
+var logger = require('../util/logFactroy').getInstance();
+
 var util = require('../util/util');
 
 
@@ -25,7 +27,7 @@ exports.getUserCard = function(userId, fn){
             });
         });
     } catch (e) {
-        console.log("查询错误");
+        logger.info("查询错误" + e.stack);
         fn(false, '查询异常'+e.stack);
     }
 }
@@ -49,7 +51,7 @@ exports.getUserDeck = function(userId, fn){
             });
         });
     } catch (e) {
-        console.log("查询错误");
+        logger.info("查询错误" + e.stack);
         fn(false, '查询异常'+e.stack);
     }
 }
@@ -74,7 +76,7 @@ exports.getUserDeckCard = function(userId, deckId, fn){
             });
         });
     } catch (e) {
-        console.log("查询错误");
+        logger.info("查询错误" + e.stack);
         fn(false, '查询异常'+e.stack);
     }
 }
@@ -98,7 +100,7 @@ exports.getUserCardInfo = function(userId, fn){
             });
         });
     } catch (e) {
-        console.log("查询错误");
+        logger.info("查询错误" + e.stack);
         fn(false, '查询异常'+e.stack);
     }
 }
@@ -122,7 +124,7 @@ exports.getCardInfo = function(cardId, fn){
             });
         });
     } catch (e) {
-        console.log("查询错误");
+        logger.info("查询错误" + e.stack);
         fn(false, '查询异常'+e.stack);
     }
 }

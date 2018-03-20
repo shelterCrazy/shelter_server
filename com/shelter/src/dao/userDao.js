@@ -14,6 +14,7 @@
 //     database : json.database
 // });
 // connection.connect();
+var logger = require('../util/logFactroy').getInstance();
 
 
 //登陆查询  回掉函数方式
@@ -24,15 +25,15 @@ exports.loginBack = function(connection, userName, password, fn){
                 if (error) throw error;
 
                 if (results != null && results.length > 0) {
-                    console.log(JSON.stringify(results))
+                    logger.debug(JSON.stringify(results))
                     fn(true, '登陆成功', results);
                 } else {
-                    console.log("查询无结果");
+                    logger.debug("查询无结果");
                     fn(false, '登陆失败，请检查用户名密码', results);
                 }
             });
     } catch (e) {
-        console.log("查询错误");
+        logger.info("查询错误" + e.stack);
         fn(false, '查询异常'+e.stack);
     }
 }
@@ -46,15 +47,15 @@ exports.userNameReCheck = function(connection, userName, fn){
                 if (error) throw error;
 
                 if (results != null && results.length > 0) {
-                    console.log(JSON.stringify(results))
+                    logger.debug(JSON.stringify(results))
                     fn(false, '用户名存在');
                 } else {
-                    console.log("查询无结果");
+                    logger.debug("查询无结果");
                     fn(true, '用户名不存在,可以使用');
                 }
             });
     } catch (e) {
-        console.log("查询错误");
+        logger.info("查询错误" + e.stack);
         fn(false, '查询异常'+e.stack);
     }
 }
@@ -68,12 +69,12 @@ exports.userBack = function(connection, fn){
                 if (error) throw error;
 
                 if (results != null && results.length > 0) {
-                    console.log(JSON.stringify(results))
+                    logger.debug(JSON.stringify(results))
                     fn(true, "ok", results);
                 }
             });
     } catch (e) {
-        console.log("查询错误");
+        logger.info("查询错误" + e.stack);
         fn(false, '查询异常'+e.stack);
     }
 }
@@ -87,14 +88,14 @@ exports.register = function(connection, userName, password, fn){
                 if (error) throw error;
 
                 if (results != null && results.insertId != 0) {
-                    console.log(JSON.stringify(results))
+                    logger.debug(JSON.stringify(results))
                     fn(true,"ok",results);
                 }else{
                     fn(false, "插入条数0");
                 }
             });
     } catch (e) {
-        console.log("新增错误");
+        logger.info("新增错误" + e.stack);
         fn(false, '新增异常'+e.stack);
     }
 }
@@ -110,14 +111,14 @@ exports.getUserInfo = function(connection, userId, fn){
                 if (error) throw error;
 
                 if (results != null && results.length > 0) {
-                    console.log(JSON.stringify(results))
+                    logger.debug(JSON.stringify(results))
                     fn(true, "ok", results);
                 }else{
                     fn(false, "没查到", results);
                 }
             });
     } catch (e) {
-        console.log("查询错误");
+        logger.info("查询错误" + e.stack);
         fn(false, '查询异常'+e.stack);
     }
 }
@@ -139,14 +140,14 @@ exports.updateUserAsh = function(connection, num, userId, fn){
                 if (error) throw error;
 
                 if (results != null && results.affectedRows != 0) {
-                    console.log(JSON.stringify(results))
+                    logger.debug(JSON.stringify(results))
                     fn(true, "ok", results);
                 }else{
                     fn(false, "修改失败/晶尘不足", results);
                 }
             });
     } catch (e) {
-        console.log("修改错误");
+        logger.info("修改错误" + e.stack);
         fn(false, '修改错误'+e.stack);
     }
 }

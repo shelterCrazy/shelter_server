@@ -4,6 +4,7 @@
 
 var userService = require('../service/UserService');
 var util = require('../util/util');
+var logger = require('../util/logFactroy').getInstance();
 var app;
 
 //引入express 对象
@@ -23,16 +24,16 @@ var init = function(){
             res.writeHead(200, {'Content-Type': 'application/json'});
             res.end(JSON.stringify({"status": '001', "msg": ":fileName没有值"}));
         }
-        console.log("***********process.cwd()" + process.cwd());
+        logger.info("***********process.cwd()" + process.cwd());
         var fileName = process.cwd() + '/com/shelter/src/view/' + req.params.fileName;
 
         res.sendFile(fileName, function (err) {
             if (err) {
-                console.log(err);
+                logger.error(err);
                 res.status(err.status).send("产生错误:" + err).end();
             }
             else {
-                console.log('Sent:', fileName);
+                logger.info('Sent:', fileName);
             }
         });
     });
@@ -95,7 +96,7 @@ var init = function(){
     //用户名查重
     app.get('/login/nameReCheck', function(req, res){
         res.writeHead(200, {'Content-Type': 'application/json'});
-        console.log("进入/login/nameReCheck");
+        logger.info("进入/login/nameReCheck");
 
         try{
             var userName = req.param("userName");

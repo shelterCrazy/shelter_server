@@ -3,6 +3,8 @@
  */
 var userDao = require('../dao/userDao');
 var userCardDao = require('../dao/userCardDao');
+var logger = require('../util/logFactroy').getInstance();
+
 var connectUtil = require('../util/ConnectUtil');
 var util = require('../util/util');
 
@@ -22,7 +24,7 @@ exports.loginBack = function(userName, password, fn){
             });
         });
     } catch (e) {
-        console.log("查询错误");
+        logger.info("查询错误");
         fn(false, '查询异常'+e.stack);
     }
 }
@@ -42,7 +44,7 @@ exports.userNameReCheck = function(userName, fn){
             });
         });
     } catch (e) {
-        console.log("查询错误");
+        logger.info("查询错误");
         fn(false, '查询异常'+e.stack);
     }
 }
@@ -62,7 +64,7 @@ exports.userBack = function(fn){
             });
         });
     } catch (e) {
-        console.log("查询错误");
+        logger.info("查询错误");
         fn(false, '查询异常'+e.stack);
     }
 }
@@ -82,7 +84,7 @@ exports.register = function(userName, password, fn){
             });
         });
     } catch (e) {
-        console.log("新增错误");
+        logger.info("新增错误");
         fn(false, '新增异常'+e.stack);
     }
 
@@ -130,7 +132,7 @@ exports.synthetiseCard = function(cardId, userId, fn){
                                             userDao.updateUserAsh(master, -Number(ashRequired), userId, function(flag, msg, rs){
                                                 if(flag){
                                                     //没问题就提交
-                                                    console.log("transaction commit");
+                                                    logger.debug("transaction commit");
                                                     master.commit(function(err){
                                                         if(err){
                                                             rollBack(master);
@@ -170,7 +172,7 @@ exports.synthetiseCard = function(cardId, userId, fn){
             });
         });
     }catch (e){
-        console.log("合成卡牌错误" + e.stack);
+        logger.info("合成卡牌错误" + e.stack);
         fn(false, '合成卡牌异常' + e.stack);
     }
 }
@@ -212,7 +214,7 @@ exports.decomposeCard = function(cardId, userId, userCardId, fn){
                                         userDao.updateUserAsh(master, ashRequired, userId, function(flag, msg, rs){
                                             if(flag){
                                                 //没问题就提交
-                                                console.log("transaction commit");
+                                                logger.debug("transaction commit");
                                                 master.commit(function(err){
                                                     if(err){
                                                         rollBack(master);
@@ -247,7 +249,7 @@ exports.decomposeCard = function(cardId, userId, userCardId, fn){
             });
         });
     }catch (e){
-        console.log("合成卡牌错误" + e.stack);
+        logger.info("合成卡牌错误" + e.stack);
         fn(false, '合成卡牌异常' + e.stack);
     }
 }
@@ -256,7 +258,7 @@ exports.decomposeCard = function(cardId, userId, userCardId, fn){
 
 //回滚操作
 var rollBack = function(conn){
-    console.log("transaction rollBack");
+    logger.info("transaction rollBack");
     conn.rollback(function(err){  //用户卡牌插入失败回滚
         if(err){
             throw err;

@@ -20,9 +20,11 @@ var shop = require('./controller/shopController'); //商店相关
 //公共服务
 var util = require('./util/util');
 var connectUtil = require('./util/ConnectUtil');
+var loggerUtil = require('./util/logFactroy');
 
-//业务Dao 以后要改
+//业务Dao
 // var login = require('./dao/userDao');
+//业务服务
 var userService = require('./service/UserService');  //用户服务
 
 
@@ -52,9 +54,19 @@ var msgEnum= {
 }
 
 
+//process是一个全局对象，argv返回的是一组包含命令行参数的数组。
+//第一项为”node”，第二项为执行的js的完整路径，后面是附加在命令行后的参数
+var args = process.argv.splice(2)
+logger.log(args);
+
+
 //引入外界js的方式分流书写app功能
 //初始化数据库链接
-connectUtil.init();
+connectUtil.init(args[0]);
+//初始化日志配置
+loggerUtil.init(args[0]);
+var logger = loggerUtil.getInstance();
+
 //拦截器
 interceptor(app);
 //注册登陆功能信息
@@ -73,24 +85,24 @@ var index = io.of("/index");
 
 //io中间件
 index.use(function(socket, next){
-    console.log("nameSpace.use");
+    logger.debug("nameSpace.use");
     next();
 });
 
 
 //战斗社交场景socket
 index.on("connection", function (socket) {
-    console.log("socket.io监听connection")
+    logger.info("socket.io监听connection")
 
     //登陆拦截器  socket中间件
     socket.use(function(packet, next){
-        console.log("packet:" + packet[0] + "packet.length:" + packet.length);
+        logger.debug("packet:" + packet[0] + "packet.length:" + packet.length);
         if(packet[0] == 'login' || packet[0] == 'close' || packet[0] == 'disconnect'){
             return next();
         }else if(packet.length > 1){
             try{
                 var id = util.decode(packet[1].token);
-                console.log("id:" + id + " util.get(id):" + util.get(id));
+                logger.debug("id:" + id + " util.get(id):" + util.get(id));
                 if(util.get(id) != null){
                     return next();
                 }else{
@@ -105,13 +117,13 @@ index.on("connection", function (socket) {
 
     //error事件处理器
     socket.on('error', function(error){
-        console.log("socket.error");
+        logger.warn("socket.error");
         socket.emit('error',{'status': msgEnum.error, 'msg':'error:' + error});
     });
 
     //链接断开
     socket.on('disconnect', function(data){
-        console.log('socket.disconnect');
+        logger.info('socket.disconnect');
     });
 
 
@@ -123,14 +135,14 @@ index.on("connection", function (socket) {
         //查询用户服务
         userService.loginBack(userName, password, function (flag, msg, results) {
             if(flag){
-                console.log('local socket.id ' + socket.id)
+                logger.debug('local socket.id ' + socket.id)
                 var token = util.encode(results[0].id);
                 socket.emit('loginResult',{'status':msgEnum.success,'msg':msg, 'results': token});
 
                 //登陆token加入token池
                 util.push(token, results[0].id);
             }else{
-                console.log('local socket.id ' + socket.id)
+                logger.info('local socket.id ' + socket.id)
                 socket.emit('loginResult',{'status':msgEnum.fail,'msg':msg});
             }
         });
@@ -143,7 +155,7 @@ index.on("connection", function (socket) {
 
     //私聊信息
     socket.on('msg', function(data){
-        console.log(data.id);
+        logger.debug(data.id);
         socket.to(data.id).emit('msg', {'status': msgEnum.success, 'from:': socket.id + ' to:' + data.id + ' 发送了消息:' + data.msg});
     });
 

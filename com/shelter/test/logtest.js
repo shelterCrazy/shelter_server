@@ -5,6 +5,7 @@
  */
 var log4j = require("log4js");
 var logConf = require("../src/properties/logConfig");
+var logger = require("../src/util/logFactroy");
 
 //process是一个全局对象，argv返回的是一组包含命令行参数的数组。
 //第一项为”node”，第二项为执行的js的完整路径，后面是附加在命令行后的参数
@@ -19,15 +20,17 @@ exports.getInstance = function(config){
 
 
 var init = function(){
-    log4j.configure(logConf);
-    var logger = log4j.getLogger(args[0]);
 
-    logger.trace('Entering cheese testing');
-    logger.debug('Got cheese.');
-    logger.info('Cheese is Gouda.');
-    logger.warn('Cheese is quite smelly.');
-    logger.error('Cheese is too ripe!');
-    logger.fatal('Cheese was breeding ground for listeria.');
+    logger.init("dev")
+    // log4j.configure(logConf);
+    // var logger = log4j.getLogger(args[0]);
+    //
+    // logger.trace('Entering cheese testing');
+    // logger.debug('Got cheese.');
+    // logger.info('Cheese is Gouda.');
+    // logger.warn('Cheese is quite smelly.');
+    // logger.error('Cheese is too ripe!');
+    // logger.fatal('Cheese was breeding ground for listeria.');
 }
 
 init();

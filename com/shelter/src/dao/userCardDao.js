@@ -13,6 +13,7 @@
 //     database : json.database
 // });
 // connection.connect();
+var logger = require('../util/logFactroy').getInstance();
 
 
 /**
@@ -27,15 +28,15 @@ exports.getUserCard = function(connection, userId, fn){
                 if (error) throw error;
 
                 if (results != null && results.length > 0) {
-                    console.log(JSON.stringify(results))
+                    logger.debug(JSON.stringify(results))
                     fn(true, 'Ok', results);
                 } else {
-                    console.log("查询无结果");
+                    logger.debug("查询无结果");
                     fn(false, '查询异常', results);
                 }
             });
     } catch (e) {
-        console.log("查询错误");
+        logger.info("查询错误" + e.stack);
         fn(false, '查询异常'+e.stack);
     }
 }
@@ -53,15 +54,15 @@ exports.getUserDeck = function(connection, userId, fn){
                 if (error) throw error;
 
                 if (results != null && results.length > 0) {
-                    console.log(JSON.stringify(results))
+                    logger.debug(JSON.stringify(results))
                     fn(true, 'Ok', results);
                 } else {
-                    console.log("查询无结果");
+                    logger.debug("查询无结果");
                     fn(false, '查询异常', results);
                 }
             });
     } catch (e) {
-        console.log("查询错误");
+        logger.info("查询错误" + e.stack);
         fn(false, '查询异常'+e.stack);
     }
 }
@@ -80,15 +81,15 @@ exports.getUserDeckCard = function(connection, userId, deckId, fn){
                 if (error) throw error;
 
                 if (results != null && results.length > 0) {
-                    console.log(JSON.stringify(results))
+                    logger.debug(JSON.stringify(results))
                     fn(true, 'Ok', results);
                 } else {
-                    console.log("查询无结果");
+                    logger.debug("查询无结果");
                     fn(false, '查询异常', results);
                 }
             });
     } catch (e) {
-        console.log("查询错误");
+        logger.info("查询错误" + e.stack);
         fn(false, '查询异常'+e.stack);
     }
 }
@@ -106,15 +107,15 @@ exports.getUserCardInfo = function(connection, userId, fn){
                 if (error) throw error;
 
                 if (results != null && results.length > 0) {
-                    console.log(JSON.stringify(results))
+                    logger.debug(JSON.stringify(results))
                     fn(true, 'Ok', results);
                 } else {
-                    console.log("查询无结果");
+                    logger.debug("查询无结果");
                     fn(false, '查询异常', results);
                 }
             });
     } catch (e) {
-        console.log("查询错误");
+        logger.info("查询错误" + e.stack);
         fn(false, '查询异常'+e.stack);
     }
 }
@@ -133,15 +134,15 @@ exports.deleteUserCard = function(connection, userId, cardId, userCardId, fn){
                 if (error) throw error;
 
                 if (results != null && results.affectedRows != 0) {
-                    console.log(JSON.stringify(results))
+                    logger.debug(JSON.stringify(results))
                     fn(true, 'Ok', results);
                 } else {
-                    console.log("删除数据行数0 userId" + userId + " cardId" + cardId + " userCardId" + userCardId);
+                    logger.debug("删除数据行数0 userId" + userId + " cardId" + cardId + " userCardId" + userCardId);
                     fn(false, '删除数据行数0', results);
                 }
             });
     } catch (e) {
-        console.log("删除数据错误");
+        logger.info("删除数据错误" + e.stack);
         fn(false, '删除数据异常'+e.stack);
     }
 }
@@ -160,15 +161,15 @@ exports.deleteUserDeckCard = function(connection, userId, cardId, userCardId, fn
                 if (error) throw error;
 
                 if (results != null && results.affectedRows != 0) {
-                    console.log(JSON.stringify(results))
+                    logger.debug(JSON.stringify(results))
                     fn(true, 'Ok', results);
                 } else {
-                    console.log("删除数据行数0 userId" + userId + " cardId" + cardId + " userCardId" + userCardId);
+                    logger.debug("删除数据行数0 userId" + userId + " cardId" + cardId + " userCardId" + userCardId);
                     fn(false, '删除数据行数0', results);
                 }
             });
     } catch (e) {
-        console.log("删除数据错误");
+        logger.info("删除数据错误" + e.stack);
         fn(false, '删除数据异常'+e.stack);
     }
 }
@@ -188,15 +189,15 @@ exports.getCardInfo = function(connection, cardId, fn){
                 if (error) throw error;
 
                 if (results != null && results.length > 0) {
-                    console.log(JSON.stringify(results))
+                    logger.debug(JSON.stringify(results))
                     fn(true, 'Ok', results);
                 } else {
-                    console.log("查询卡牌无结果");
+                    logger.debug("查询卡牌无结果");
                     fn(false, '查询卡牌无结果', results);
                 }
             });
     } catch (e) {
-        console.log("查询卡牌信息异常" + e.stack);
+        logger.info("查询卡牌信息异常" + e.stack);
         fn(false, '查询卡牌信息异常'+e.stack);
     }
 }
@@ -218,15 +219,15 @@ exports.addUserCard = function(connection, userId, cardId, fn){
                 if (error) throw error;
 
                 if (results != null && results.insertId != 0) {
-                    console.log(JSON.stringify(results))
+                    logger.debug(JSON.stringify(results))
                     fn(true, 'Ok', results);
                 } else {
-                    console.log("用户新增卡牌失败");
+                    logger.debug("用户新增卡牌失败");
                     fn(false, '用户新增卡牌失败', results);
                 }
             });
     } catch (e) {
-        console.log("用户新增卡牌失败" + e.stack);
+        logger.info("用户新增卡牌失败" + e.stack);
         fn(false, '用户新增卡牌失败'+e.stack);
     }
 }
