@@ -4,8 +4,8 @@
  */
 var deckService = require('../service/DeckService');
 var util = require('../util/util.js');
-var logger = require('../util/logFactroy').getInstance();
-
+var loggerUtil = require('../util/logFactroy');
+var logger = loggerUtil.getInstance();
 var app;
 
 //引入express 对象

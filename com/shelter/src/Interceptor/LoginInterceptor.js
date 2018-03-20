@@ -10,8 +10,8 @@
 var session = require('express-session');
 var bodyparser = require('body-parser');
 var util = require('../util/util.js');
-var logger = require('../util/logFactroy').getInstance();
-
+var loggerUtil = require('../util/logFactroy');
+var logger = loggerUtil.getInstance();
 var app;
 
 module.exports = function(appL){

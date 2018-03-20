@@ -3,8 +3,8 @@
  */
 var userDao = require('../dao/userDao');
 var userCardDao = require('../dao/userCardDao');
-var logger = require('../util/logFactroy').getInstance();
-
+var loggerUtil = require('../util/logFactroy');
+var logger = loggerUtil.getInstance();
 var connectUtil = require('../util/ConnectUtil');
 var util = require('../util/util');
 

@@ -7,7 +7,8 @@
 var mysql = require('mysql');
 var mysqlconf = require("../properties/mysqlConfig");
 var poolCluster;
-
+var loggerUtil = require('../util/logFactroy');
+var logger = loggerUtil.getInstance();
 
 
 module.exports = {
@@ -24,10 +25,10 @@ module.exports = {
         // Target Group : MASTER, Selector : round-robin
         poolCluster.getConnection('master', function (err, connection) {
             if(err){
-                console.log(typeof Error("获取失败"))
+                logger.info(typeof Error("获取失败"))
                 fn(null);
             }else{
-                console.log("getConnection:" + connection._clusterId);
+                logger.debug("getConnection:" + connection._clusterId);
                 fn(connection);
             }
         });
@@ -36,10 +37,10 @@ module.exports = {
         // Target Group : SLAVE*, Selector : round-robin
         poolCluster.getConnection('slave*', function (err, connection) {
             if(err){
-                console.log(typeof Error("获取失败"))
+                logger.info(typeof Error("获取失败"))
                 fn(null);
             }else{
-                console.log("getConnection:" + connection._clusterId);
+                logger.debug("getConnection:" + connection._clusterId);
                 fn(connection);
             }
         });
@@ -114,17 +115,17 @@ var init = function(conf){
 
     //给每个cluster的 pool 加上监听
     poolCluster._nodes["master"].pool.on('acquire', function (connection) {
-        console.log('Connection %d acquired', connection.threadId);
+        logger.debug('Connection %d acquired', connection.threadId);
     });
     poolCluster._nodes["master"].pool.on('release', function (connection) {
-        console.log('Connection %d released', connection.threadId);
+        logger.debug('Connection %d released', connection.threadId);
     });
     for(var i=0; i<conf.slave.length; i++){
         poolCluster._nodes[conf.slave[i].name].pool.on('acquire', function (connection) {
-            console.log('Connection %d acquired', connection.threadId);
+            logger.debug('Connection %d acquired', connection.threadId);
         });
         poolCluster._nodes[conf.slave[i].name].pool.on('release', function (connection) {
-            console.log('Connection %d released', connection.threadId);
+            logger.debug('Connection %d released', connection.threadId);
         });
     }
 
@@ -143,7 +144,7 @@ var init = function(conf){
     // Target Group : SLAVE1-2, Selector : order
     // If can't connect to SLAVE1, return SLAVE2. (remove SLAVE1 in the cluster)
     poolCluster.on('remove', function (nodeId) {
-        console.log('REMOVED NODE : ' + nodeId); // nodeId = SLAVE1
+        logger.warn('REMOVED NODE : ' + nodeId); // nodeId = SLAVE1
     });
 
     // A pattern can be passed with *  as wildcard

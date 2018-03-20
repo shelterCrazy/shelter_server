@@ -57,7 +57,7 @@ var msgEnum= {
 //process是一个全局对象，argv返回的是一组包含命令行参数的数组。
 //第一项为”node”，第二项为执行的js的完整路径，后面是附加在命令行后的参数
 var args = process.argv.splice(2)
-logger.log(args);
+console.log(args);
 
 
 //引入外界js的方式分流书写app功能

@@ -13,8 +13,8 @@
 //     database : json.database
 // });
 // connection.connect();
-var logger = require('../util/logFactroy').getInstance();
-
+var loggerUtil = require('../util/logFactroy');
+var logger = loggerUtil.getInstance();
 
 /**
  * 查询用户卡牌包信息

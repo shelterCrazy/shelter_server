@@ -14,8 +14,8 @@
 //     database : json.database
 // });
 // connection.connect();
-var logger = require('../util/logFactroy').getInstance();
-
+var loggerUtil = require('../util/logFactroy');
+var logger = loggerUtil.getInstance();
 
 //登陆查询  回掉函数方式
 exports.loginBack = function(connection, userName, password, fn){

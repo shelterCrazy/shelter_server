@@ -5,19 +5,23 @@
  */
 var log4j = require("log4js");
 var logConf = require("../properties/logConfig");
+var config;
 
 var logger = {
-    config:'',
-    init : function(config){
-        this.config = config;
+    init : function(conf){
+        config = conf;
     },
     getInstance : function(){
-        log4j.configure(logConf);
-        return log4j.getLogger(this.config);
+        if(config == "dev"){
+            log4j.configure(logConf.dev);
+        }else if(config == "release"){
+            log4j.configure(logConf.release);
+        }
+        return log4j.getLogger(config);
     }
 }
 
-exports = logger;
+module.exports = logger;
 
 
 
