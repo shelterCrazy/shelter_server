@@ -27,7 +27,7 @@ module.exports = {
       appenders:{
           InfoLog:{
               type:"file",
-              filename:"//var/log/shelter_log.d/shelterInfo.log",
+              filename:"/var/log/shelter_log.d/shelterInfo.log",
               maxLogSize: 1024*1024*10
           },
       },

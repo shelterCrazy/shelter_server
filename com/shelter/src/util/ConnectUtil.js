@@ -57,6 +57,9 @@ var init = function(conf){
     }else if(conf == "release"){
         conf = mysqlconf.release;
     }
+    if(conf == undefined || conf == null){
+        conf =  mysqlconf.dev;
+    }
     poolCluster = mysql.createPoolCluster(conf.cluster);
         /**
          * canRetry: If true, PoolCluster will attempt to reconnect when connection fails. (Default: true)
