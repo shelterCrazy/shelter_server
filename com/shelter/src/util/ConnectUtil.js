@@ -1,5 +1,5 @@
 /**
- * @主要功能: 连接池util
+ * @主要功能: 数据库连接池util
  * @author kenan
  * @Date 2018/3/2 11:44
  *
@@ -9,6 +9,10 @@ var mysqlconf = require("../properties/mysqlConfig");
 var poolCluster;
 var loggerUtil = require('../util/logFactroy');
 var logger = loggerUtil.getInstance();
+
+//json用法
+// var fs = require('fs');
+// var json = JSON.parse(fs.readFileSync(__dirname + "/../properties/mysql.json"));
 
 
 module.exports = {

@@ -60,6 +60,7 @@
             login:0,        //登陆操作
             joinRoom:1,     //申请room操作
             leaveRoom:2,    //离开房间
+            match:3     //匹配
         }
 
         var status = statusEnum.start;
@@ -81,7 +82,7 @@
 
         //申请room聊天室聊天  type: roomChat普通聊天 roomHit战斗房间/战斗申请
         var joinMsg = function(type){
-            socket.emit('join',{type:type})
+            socket.emit('join',{type:type, 'token':token})
         }
         //room聊天  可以先用joinMsg 申请一个房间   然后再用roomMsg发送消息
         var roomMsg = function(room, msg){
@@ -97,6 +98,11 @@
             status = statusEnum.exit;
             socket.emit('close');  //向服务器发送关闭链接消息  然后断开链接
             socket.close();
+        }
+
+        //匹配请求
+        var match = function(){
+            socket.emit('match', {'token':token});
         }
 
 
@@ -137,11 +143,13 @@
             socket.on('controlMsg', function(data){
                 console.log('controlMsg, type:' + data.type + ' msg:' + data.msg);
                 switch (data.type){
+                    //登陆
                     case msgType.login:
                         if(data.status == msgEnum.fail || data.status == msgEnum.error){ //登陆错误重新尝试
                             setTimeout(login(),1000); //1秒间隔
                         }
                         break;
+                    //room操作
                     case msgType.joinRoom:
                         if(data.status == msgEnum.fail || data.status == msgEnum.error){
                             setTimeout(join(),1000); //1秒间隔
@@ -161,6 +169,14 @@
             //room聊天
             socket.on('roomChat', function(data){
                console.log('msg' + data.msg);
+            });
+            //匹配结果
+            socket.on('matchMsg', function(data){
+                if(data.status == msgEnum.success){
+                    console.log("match成功 room:" + data.room);
+                }else{
+                    console.log("match失败 msg:" + data.msg);
+                }
             });
         }
     </script>

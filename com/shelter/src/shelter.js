@@ -12,25 +12,26 @@ var app = express();
 var socket = require('socket.io');
 
 //功能模块
-var index = require('./controller/indexControllor');  //登陆注册
+var indexControllor = require('./controller/indexControllor');  //登陆注册
 var userCard = require('./controller/userCradController');  //用户卡牌
 var interceptor = require('./Interceptor/LoginInterceptor');   //拦截器中间件
 var shop = require('./controller/shopController'); //商店相关
+var match = require('./controller/matchControllor'); //商店相关
+
 
 //公共服务
 var util = require('./util/util');
 var connectUtil = require('./util/ConnectUtil');
 var loggerUtil = require('./util/logFactroy');
+var redisUtil = require('./util/redisUtil');
 
-//业务Dao
-// var login = require('./dao/userDao');
 //业务服务
 var userService = require('./service/UserService');  //用户服务
 
 
 
 /**  初始化 */
-//应用监听端口
+/*express初始化*/
 var port = 3000;
 var server = http.Server(app);
 server.listen(port);    //必须是 http设置端口   app.listen(port) 并不会将端口给server
@@ -39,9 +40,13 @@ var io =  socket(server,{
     pingInterval: 10000
 });
 
+/*socket.io 初始化*/
+var index = io.of("/index"); //index 空间
+
 //静态资源
 app.use(express.static('public'));
 
+/*全局变量  常量*/
 //房间信息记录
 var roomsInfo = []
 //战斗申请池
@@ -54,33 +59,43 @@ var msgEnum= {
 }
 
 
+/*启动参数*/
 //process是一个全局对象，argv返回的是一组包含命令行参数的数组。
 //第一项为”node”，第二项为执行的js的完整路径，后面是附加在命令行后的参数
 var args = process.argv.splice(2)
 console.log(args);
+if(args.length == 0){
+    args[0] = "dev";
+}
 
 
+/*util初始化*/
 //引入外界js的方式分流书写app功能
 //初始化数据库链接
 connectUtil.init(args[0]);
 //初始化日志配置
 loggerUtil.init(args[0]);
 var logger = loggerUtil.getInstance();
+//初始化redis
+redisUtil.init(args[0]);
 
+/*controller 初始化*/
 //拦截器
 interceptor(app);
 //注册登陆功能信息
-index(app);
+indexControllor(app);
 //用户卡牌包-卡牌信息
 userCard(app);
 //商店相关
 shop(app);
+//匹配相关
+match(index);
+
 /** 初始化结束 */
 
 
 
-//初始化/index 空间
-var index = io.of("/index");
+
 
 
 //io中间件
@@ -162,7 +177,7 @@ index.on("connection", function (socket) {
 
     //进入房间
     socket.on('join', function(data){
-        if(data.room != null && data.room != ""){
+        if(data.type != null && data.type != ""){
             socket.join(data.room);
             // 将用户昵称加入房间名单中
             if (!roomsInfo[data.room]) {
@@ -171,9 +186,9 @@ index.on("connection", function (socket) {
             roomsInfo[data.room].push(data.token);
 
             //发送反馈消息
-            socket.to(socket.id).emit('msg', {status:msgEnum.success, })
+            socket.to(socket.id).emit('msg', {status:msgEnum.success, 'msg':'ok'});
         }else{
-            socket.to(socket.id).emit('msg', {status:msgEnum.fail, })
+            socket.to(socket.id).emit('msg', {status:msgEnum.fail, 'msg':'fail'});
         }
     });
 
@@ -191,7 +206,6 @@ index.on("connection", function (socket) {
                     break;
             }
             if(leaveFlag){
-                socket
             }else{
                 socket.join(room);
                 socket.to(room).emit(event, {'status':200, 'msg':data.msg});
