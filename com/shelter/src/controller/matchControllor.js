@@ -46,6 +46,8 @@ var init = function(){
                     var other = list[Number((Math.random()*list.length).toFixed(0))];
                     var socketId = other.split(":")[1];
                     if(socketId != socket.id){
+                        redis.getClient().srem('match', other, util.decode(data.token)+":"+socket.id);  //移除这两个匹配节点
+
                         var room = "room" + socketId.sub(socketId.length-5, socketId.length-1) + socket.id.sub(socket.id.length-5, socket.id.length-1);
                         socket.to(socketId).emit('matchMsg', {status: '200', 'msg': '匹配成功获取room', room: room});
                         socket.emit('matchMsg', {status: '200', 'msg': '匹配成功获取room', room: room});
