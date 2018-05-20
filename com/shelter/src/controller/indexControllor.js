@@ -7,6 +7,8 @@ var util = require('../util/util');
 var loggerUtil = require('../util/logFactroy');
 var logger = loggerUtil.getInstance();
 var app;
+var path = require('path')
+
 
 //引入express 对象
 module.exports = function(appL){
@@ -19,14 +21,14 @@ var init = function(){
 
     //展示socketio demo页面
     app.get('/socketIndex/:fileName', function(req, res){
-        // var fileName = __dirname + '/view/' + req.params.fileName;
+        var fileName = path.resolve(__dirname, '..') + '/view/' + req.params.fileName;
 
         if(req.params.fileName == null){
             res.writeHead(200, {'Content-Type': 'application/json'});
             res.end(JSON.stringify({"status": '001', "msg": ":fileName没有值"}));
         }
         logger.info("***********process.cwd()" + process.cwd());
-        var fileName = process.cwd() + '/com/shelter/src/view/' + req.params.fileName;
+        // var fileName = process.cwd() + '/com/shelter/src/view/' + req.params.fileName;
 
         res.sendFile(fileName, function (err) {
             if (err) {
@@ -158,3 +160,5 @@ var init = function(){
         }
     });
 }
+
+
