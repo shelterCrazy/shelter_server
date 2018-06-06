@@ -5,7 +5,6 @@
 var userService = require('../service/UserService');
 var util = require('../util/util');
 var loggerUtil = require('../util/logFactroy');
-var logger = loggerUtil.getInstance();
 var app;
 var path = require('path')
 
@@ -18,6 +17,7 @@ module.exports = function(appL){
 
 //初始化  只有在引入app对象后才能开启 app路由
 var init = function(){
+    var logger = loggerUtil.getInstance();
 
     //展示socketio demo页面
     app.get('/socketIndex/:fileName', function(req, res){

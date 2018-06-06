@@ -1,10 +1,9 @@
 /**
- * kenan 游戏登陆/注册模块控制器
+ * kenan 游戏匹配模块控制器
  */
 
 var util = require('../util/util');
 var loggerUtil = require('../util/logFactroy');
-var logger = loggerUtil.getInstance();
 var redis = require("../util/redisUtil");
 var index;
 
@@ -16,6 +15,8 @@ module.exports = function(indexL){
 
 //初始化  只有在引入app对象后才能开启 app路由
 var init = function(){
+    var logger = loggerUtil.getInstance();
+
 
     //战斗社交场景socket
     index.on("connection", function (socket) {
@@ -40,15 +41,18 @@ var init = function(){
             redis.getClient().smembers('match', function(err, list){
 
                 while(true){
-                    if(list.length <= 1){
+                    if(list.length <= 1 || list == null || list == undefined){
                         break;
                     }
-                    var other = list[Number((Math.random()*list.length).toFixed(0))];
+
+                    logger.debug("Number((Math.random()*list.length-1).toFixed(0)" + Number((Math.random()*list.length-1).toFixed(0)));
+                    var other = list[Number((Math.random()*list.length-1).toFixed(0))];
+                    logger.debug("listNum" + list.length + " other:" + other);
                     var socketId = other.split(":")[1];
                     if(socketId != socket.id){
                         redis.getClient().srem('match', other, util.decode(data.token)+":"+socket.id);  //移除这两个匹配节点
 
-                        var room = "room" + socketId.sub(socketId.length-5, socketId.length-1) + socket.id.sub(socket.id.length-5, socket.id.length-1);
+                        var room = "room" + socketId.substring(socketId.length-5, socketId.length-1) + socket.id.substring(socket.id.length-5, socket.id.length-1);
                         socket.to(socketId).emit('matchMsg', {status: '200', 'msg': '匹配成功获取room', room: room});
                         socket.emit('matchMsg', {status: '200', 'msg': '匹配成功获取room', room: room});
                         return;

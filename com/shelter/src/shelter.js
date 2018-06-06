@@ -11,6 +11,36 @@ var express = require('express');
 var app = express();
 var socket = require('socket.io');
 
+
+//公共服务
+var util = require('./util/util');
+var connectUtil = require('./util/ConnectUtil');
+var loggerUtil = require('./util/logFactroy');
+var redisUtil = require('./util/redisUtil');
+
+
+/**util 初始化 */
+/*启动参数*/
+//process是一个全局对象，argv返回的是一组包含命令行参数的数组。
+//第一项为”node”，第二项为执行的js的完整路径，后面是附加在命令行后的参数
+var args = process.argv.splice(2)
+if(args.length == 0){
+    args[0] = "dev";
+}
+console.log(args);
+
+/*util初始化*/
+//引入外界js的方式分流书写app功能
+//初始化数据库链接
+connectUtil.init(args[0]);
+//初始化日志配置
+loggerUtil.init(args[0]);
+var logger = loggerUtil.getInstance();
+//初始化redis
+redisUtil.init(args[0]);
+/** util 初始化结束 */
+
+
 //功能模块
 var indexControllor = require('./controller/indexControllor');  //登陆注册
 var userCard = require('./controller/userCradController');  //用户卡牌
@@ -18,12 +48,6 @@ var interceptor = require('./Interceptor/LoginInterceptor');   //拦截器中间
 var shop = require('./controller/shopController'); //商店相关
 var match = require('./controller/matchControllor'); //商店相关
 
-
-//公共服务
-var util = require('./util/util');
-var connectUtil = require('./util/ConnectUtil');
-var loggerUtil = require('./util/logFactroy');
-var redisUtil = require('./util/redisUtil');
 
 //业务服务
 var userService = require('./service/UserService');  //用户服务
@@ -58,26 +82,6 @@ var msgEnum= {
     error:2,    //错误消息
 }
 
-
-/*启动参数*/
-//process是一个全局对象，argv返回的是一组包含命令行参数的数组。
-//第一项为”node”，第二项为执行的js的完整路径，后面是附加在命令行后的参数
-var args = process.argv.splice(2)
-console.log(args);
-if(args.length == 0){
-    args[0] = "dev";
-}
-
-
-/*util初始化*/
-//引入外界js的方式分流书写app功能
-//初始化数据库链接
-connectUtil.init(args[0]);
-//初始化日志配置
-loggerUtil.init(args[0]);
-var logger = loggerUtil.getInstance();
-//初始化redis
-redisUtil.init(args[0]);
 
 /*controller 初始化*/
 //拦截器
@@ -183,7 +187,7 @@ index.on("connection", function (socket) {
             if (!roomsInfo[data.room]) {
                 roomsInfo[data.room] = [];
             }
-            roomsInfo[data.room].push(data.token);
+            roomsInfo[data.room].push(util.decode(data.token));
 
             //发送反馈消息
             socket.to(socket.id).emit('msg', {status:msgEnum.success, 'msg':'ok'});
@@ -192,7 +196,36 @@ index.on("connection", function (socket) {
         }
     });
 
+
     //room消息广播
+    socket.on('roomMsg', function(data){
+        if(data.room != null && data.room != ""){
+            socket.to(data.room).emit(event, {'status':200, 'msg':data.msg});
+        }else{
+            socket.to(socket.id).emit('msg', {status:msgEnum.fail, 'msg':'no room'});
+        }
+    });
+
+
+    //离开房间
+    socket.on('leaveRoom', function(data){
+        if(data.room != null && data.room != ""){
+            socket.leaveRoom(data.room);
+
+            // 用户离开room房间
+            if (!roomsInfo[data.room]) {  //room 没了当作成功
+                socket.to(socket.id).emit('msg', {status:msgEnum.success, 'msg':'ok'});
+                return;
+            }
+            roomsInfo[data.room].pop(util.decode(data.token));
+            socket.to(socket.id).emit('msg', {status:msgEnum.success, 'msg':'ok'});
+        }else{
+            socket.to(socket.id).emit('msg', {status:msgEnum.fail, 'msg':'fail'});
+        }
+    });
+
+
+    //room消息广播    作废
     socket.on('room', function(data){
         if(data.room != null && data.room != ""){
             var room = data.room;
