@@ -3,9 +3,9 @@ module.exports = {
   dev : {
       appenders:{
           AllLog:{
-              type:"file",
-              filename:"shelterInfo.log",
-              maxLogSize: 1024*1024*5
+              type:"console"
+              // filename:"shelterInfo.log",
+              // maxLogSize: 1024*1024*5
           }
       },
       categories:{

@@ -5,7 +5,6 @@
 var deckService = require('../service/DeckService');
 var util = require('../util/util.js');
 var loggerUtil = require('../util/logFactroy');
-var logger = loggerUtil.getInstance();
 var app;
 
 //引入express 对象
@@ -17,6 +16,7 @@ module.exports = function(appL){
 
 //初始化  只有在引入app对象后才能开启 app路由
 var init = function(){
+    var logger = loggerUtil.getInstance();
 
 
     //获取用户卡牌包信息

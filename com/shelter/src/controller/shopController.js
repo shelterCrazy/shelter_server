@@ -6,7 +6,6 @@
 var userService = require('../service/UserService');
 var util = require('../util/util.js');
 var loggerUtil = require('../util/logFactroy');
-var logger = loggerUtil.getInstance();
 var app;
 
 //引入express 对象
@@ -18,6 +17,7 @@ module.exports = function(appL){
 
 //初始化
 var init = function(){
+    var logger = loggerUtil.getInstance();
 
     /**
      * @主要功能:   创建卡组

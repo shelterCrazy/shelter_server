@@ -11,7 +11,6 @@ var session = require('express-session');
 var bodyparser = require('body-parser');
 var util = require('../util/util.js');
 var loggerUtil = require('../util/logFactroy');
-var logger = loggerUtil.getInstance();
 var app;
 
 module.exports = function(appL){
@@ -21,6 +20,7 @@ module.exports = function(appL){
 
 
 var init = function(){
+    var logger = loggerUtil.getInstance();
 
     //session中间件
     app.use(session({
