@@ -20,7 +20,7 @@ var init = function(){
 
 
     //获取用户卡牌包信息
-    app.get('/areadly/userCrad', function (req, res) {
+    app.get('/areadly/userCard', function (req, res) {
 
         res.writeHead(200, {'Content-Type': 'application/json'});
         try{

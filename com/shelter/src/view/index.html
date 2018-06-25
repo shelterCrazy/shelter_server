@@ -81,12 +81,12 @@
         }
 
         //申请room聊天室聊天  type: roomChat普通聊天 roomHit战斗房间/战斗申请
-        var joinMsg = function(type){
-            socket.emit('join',{type:type, 'token':token})
+        var joinMsg = function(type,room){
+            socket.emit('join',{'type':type, 'room':room, 'token':token})
         }
         //room聊天  可以先用joinMsg 申请一个房间   然后再用roomMsg发送消息
-        var roomMsg = function(room, msg){
-            socket.emit('room', {'room':room, 'msg':msg, 'token':token});
+        var roomMsg = function(room, msg, type){
+            socket.emit('room', {'type':type, 'room':room, 'msg':msg, 'token':token});
         }
         //退出room
         var endRoom = function(room){
@@ -168,7 +168,10 @@
             });
             //room聊天
             socket.on('roomChat', function(data){
-               console.log('msg' + data.msg);
+               console.log('msg:' + data.msg);
+            });
+            socket.on('roomHit', function(data){
+               console.log('hit:' + data.msg);
             });
             //匹配结果
             socket.on('matchMsg', function(data){

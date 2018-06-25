@@ -13,7 +13,7 @@ var socket = require('socket.io');
 
 //功能模块
 var indexControllor = require('./controller/indexControllor');  //登陆注册
-var userCard = require('./controller/userCradController');  //用户卡牌
+var userCard = require('./controller/userCardController');  //用户卡牌
 var interceptor = require('./Interceptor/LoginInterceptor');   //拦截器中间件
 var shop = require('./controller/shopController'); //商店相关
 var match = require('./controller/matchControllor'); //商店相关
@@ -177,6 +177,7 @@ index.on("connection", function (socket) {
 
     //进入房间
     socket.on('join', function(data){
+        console.log('join');
         if(data.type != null && data.type != ""){
             socket.join(data.room);
             // 将用户昵称加入房间名单中
@@ -184,8 +185,9 @@ index.on("connection", function (socket) {
                 roomsInfo[data.room] = [];
             }
             roomsInfo[data.room].push(data.token);
-
+            console.log("socket.to(data.room).emit('msg', {status:msgEnum.success, 'msg':'ok'})")
             //发送反馈消息
+            //CEO的代码 socket.to(socket.id).emit('msg', {status:msgEnum.success, 'msg':'ok'});
             socket.to(socket.id).emit('msg', {status:msgEnum.success, 'msg':'ok'});
         }else{
             socket.to(socket.id).emit('msg', {status:msgEnum.fail, 'msg':'fail'});
@@ -194,12 +196,14 @@ index.on("connection", function (socket) {
 
     //room消息广播
     socket.on('room', function(data){
-        if(data.room != null && data.room != ""){
+        console.log("room内消息广播");
+        if(data.type != null && data.type != ""){
+            var type = data.type;
             var room = data.room;
             var leaveFlag = data.leaveFlag;
 
             var event;
-            switch (room){   //不同房间不同事件
+            switch (type){   //不同房间不同事件
                 case 'roomChat': event = 'roomChat'; break;
                 case 'roomHit': event = 'roomHit'; break;
                 default:
