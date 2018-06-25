@@ -248,7 +248,7 @@ exports.useCardPackage = function(packageId, packageType, userId, fn){
                 }
                 userCardDao.getCardPackageStatus(master, userId, packageId, function(flag, msg, rs){
                     if(flag){
-                        console.log(rs);
+                        //console.log(rs);
                         if(rs[0].status == 0){
                         userCardDao.getCardPackageProbability(master, packageType, function(flag, msg, rs){
                             if(flag){
@@ -272,13 +272,13 @@ exports.useCardPackage = function(packageId, packageType, userId, fn){
                                     for(j = 2; j < 5; j++){
                                         probability[j] += probability[j - 1];
                                     }
-                                    console.log(probability);
+                                    //console.log(probability);
                                     var card = [];
                                     for(i = 0; i < 5; i++){
                                         var rand = Math.random();
                                         for(j = 1; j < 5; j++){
                                             if(rand < probability[j] && probability[j - 1] <= rand){
-                                                console.log("稀有度是" + j);
+                                                //console.log("稀有度是" + j);
                                                 break;
                                             }
                                         }
@@ -291,25 +291,25 @@ exports.useCardPackage = function(packageId, packageType, userId, fn){
                                                     //console.log(card);
                                                     userCardDao.renewCardPackageStatus(master, userId, packageId, function(flag, msg, rs){
                                                         if(flag){
-                                                            console.log( ' 开包标志添加成功' + msg);
+                                                            //console.log( ' 开包标志添加成功' + msg);
                                                             //fn(true, ' 开包标志添加成功' + msg);
                                                         }else{
                                                             rollBack(master);
                                                             master.release();
-                                                            console.log( ' 开包标志添加异常' + msg);
+                                                            //console.log( ' 开包标志添加异常' + msg);
                                                             fn(false, '开包标志添加异常' + msg);
                                                         }
                                                     });
                                                     for(i = 0; i < 5; i++){
-                                                        console.log(card[i]);
+                                                        //console.log(card[i]);
                                                         userCardDao.addUserCard(master, userId, card[i].id, function(flag, msg, rs){
                                                             if(flag){
-                                                                console.log( ' 添加卡牌成功' + msg);
+                                                                //console.log( ' 添加卡牌成功' + msg);
                                                                 //fn(true, ' 添加卡牌成功' + msg);
                                                             }else{
                                                                 rollBack(master);
                                                                 master.release();
-                                                                console.log( ' 添加卡牌异常' + msg);
+                                                                //console.log( ' 添加卡牌异常' + msg);
                                                                 fn(false, '添加卡牌异常' + msg);
                                                             }
                                                         });
