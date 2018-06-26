@@ -188,13 +188,8 @@ index.on("connection", function (socket) {
             if (!roomsInfo[data.room]) {
                 roomsInfo[data.room] = [];
             }
-<<<<<<< HEAD
-            roomsInfo[data.room].push(data.token);
-            console.log("socket.to(data.room).emit('msg', {status:msgEnum.success, 'msg':'ok'})")
-=======
             roomsInfo[data.room].push(util.decode(data.token));
 
->>>>>>> aeff236cccea34b9626b12bc6cf7dbd657a64c80
             //发送反馈消息
             //CEO的代码 socket.to(socket.id).emit('msg', {status:msgEnum.success, 'msg':'ok'});
             socket.to(socket.id).emit('msg', {status:msgEnum.success, 'msg':'ok'});
