@@ -181,6 +181,7 @@ index.on("connection", function (socket) {
 
     //进入房间
     socket.on('join', function(data){
+        console.log('join');
         if(data.type != null && data.type != ""){
             socket.join(data.room);
             // 将用户昵称加入房间名单中
@@ -190,6 +191,7 @@ index.on("connection", function (socket) {
             roomsInfo[data.room].push(util.decode(data.token));
 
             //发送反馈消息
+            //CEO的代码 socket.to(socket.id).emit('msg', {status:msgEnum.success, 'msg':'ok'});
             socket.to(socket.id).emit('msg', {status:msgEnum.success, 'msg':'ok'});
         }else{
             socket.to(socket.id).emit('msg', {status:msgEnum.fail, 'msg':'fail'});
@@ -227,12 +229,14 @@ index.on("connection", function (socket) {
 
     //room消息广播    作废
     socket.on('room', function(data){
-        if(data.room != null && data.room != ""){
+        console.log("room内消息广播");
+        if(data.type != null && data.type != ""){
+            var type = data.type;
             var room = data.room;
             var leaveFlag = data.leaveFlag;
 
             var event;
-            switch (room){   //不同房间不同事件
+            switch (type){   //不同房间不同事件
                 case 'roomChat': event = 'roomChat'; break;
                 case 'roomHit': event = 'roomHit'; break;
                 default:
