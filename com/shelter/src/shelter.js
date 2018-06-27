@@ -43,10 +43,10 @@ redisUtil.init(args[0]);
 
 //功能模块
 var indexControllor = require('./controller/indexControllor');  //登陆注册
-var userCard = require('./controller/userCradController');  //用户卡牌
+var userCard = require('./controller/userCardController');  //用户卡牌
 var interceptor = require('./Interceptor/LoginInterceptor');   //拦截器中间件
 var shop = require('./controller/shopController'); //商店相关
-var match = require('./controller/matchControllor'); //商店相关
+var match = require('./controller/matchControllor'); //匹配相关
 
 
 //业务服务
