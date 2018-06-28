@@ -179,7 +179,96 @@ exports.deleteDeck = function(deckId, userId, fn){
         fn(false, '删除异常'+e.stack);
     }
 }
-
+/**
+ * @主要功能:删除卡组卡牌
+ * @author C14
+ * @Date 2018/6/27 15:54
+ * @param deckName
+ * @param userId
+ * @param fn
+ */
+exports.deleteDeckCards = function(deckId, userId, fn){
+    try {
+        connectUtil.getMaster(function(master) {
+            if(master == null){
+                fn(false, '获取链接失败');
+                return ;
+            }
+            //开启事务
+            master.beginTransaction(function (err) {
+                if (err) {
+                    throw err;
+                }
+                userCardDao.deleteUserDeckCards(master, userId, deckId, function(flag, msg, rs){
+                    if(flag){
+                        //没问题就提交
+                        logger.debug("transaction commit");
+                        master.commit(function(err){
+                            if(err){
+                                rollBack(master);
+                            }
+                            master.release();
+                            fn(true, '删除卡组卡牌成功');
+                        });
+                    }else{
+                        rollBack(master);
+                        master.release();
+                        fn(false, '删除卡组卡牌异常' + msg);
+                    }
+                });
+            });
+        });
+    } catch (e) {
+        logger.info("删除错误");
+        fn(false, '删除异常'+e.stack);
+    }
+}
+/**
+ * @主要功能:添加卡组卡牌
+ * @author C14
+ * @Date 2018/6/27 16:39
+ * @param userId
+ * @param deckId
+ * @param cardId
+ * @param userCardId
+ * @param fn
+ */
+exports.addDeckCard = function(userId, deckId, cardId, userCardId, fn){
+    try {
+        connectUtil.getMaster(function(master) {
+            if(master == null){
+                fn(false, '获取链接失败');
+                return ;
+            }
+            //开启事务
+            master.beginTransaction(function (err) {
+                if (err) {
+                    throw err;
+                }
+                userCardDao.addUserDeckCard(master, userId, deckId, cardId, userCardId, function(flag, msg, rs){
+                    if(flag){
+                        //没问题就提交
+                        logger.debug("transaction commit");
+                        master.commit(function(err){
+                            if(err){
+                                rollBack(master);
+                            }
+                            master.release();
+                            fn(true, '添加卡组卡牌成功');
+                        });
+                    }else{
+                        rollBack(master);
+                        master.release();
+                        fn(false, '添加卡组卡牌异常' + msg);
+                    }
+                });
+            });
+        });
+    } catch (e) {
+        logger.info("添加错误");
+        fn(false, '添加异常'+e.stack);
+    }
+}
 /**
  * @主要功能:更新用户卡组名称
  * @author C14
@@ -246,10 +335,12 @@ exports.useCardPackage = function(packageId, packageType, userId, fn){
                 if (err) {
                     throw err;
                 }
-                userCardDao.getCardPackageStatus(master, userId, packageId, function(flag, msg, rs){
+                //获取卡包的信息
+                userCardDao.getCardPackageInfo(master, userId, packageId, function(flag, msg, rs){
                     if(flag){
-                        //console.log(rs);
+                        //如果卡包的状态是可以为使用的话
                         if(rs[0].status == 0){
+                        //获取卡包不同稀有度卡牌的爆率
                         userCardDao.getCardPackageProbability(master, packageType, function(flag, msg, rs){
                             if(flag){
                                 logger.debug("transaction commit");
@@ -257,11 +348,11 @@ exports.useCardPackage = function(packageId, packageType, userId, fn){
                                     if(err){
                                         rollBack(master);
                                     }
-                                    //console.log(rs[0]);
                                     master.release();
+                                    //创建爆率数组
                                     var probability = [];
                                     probability[0] = 0;
-
+                                    //将每一种稀有度的爆率储存到不同的probability中
                                     for(var j = 0; j < 4; j++){
                                         for(var i = 0; i < 4; i++){
                                             if(rs[i].rarity === j + 1){
@@ -269,26 +360,29 @@ exports.useCardPackage = function(packageId, packageType, userId, fn){
                                             }
                                         }
                                     }
+                                    //叠加不同稀有度到probability中
                                     for(j = 2; j < 5; j++){
                                         probability[j] += probability[j - 1];
                                     }
-                                    //console.log(probability);
+                                    //创建card数组
                                     var card = [];
                                     for(i = 0; i < 5; i++){
+                                        //产生0到1的稀有度
                                         var rand = Math.random();
+                                        //如果在爆率范围内，跳出，j就为本牌的稀有度
                                         for(j = 1; j < 5; j++){
                                             if(rand < probability[j] && probability[j - 1] <= rand){
-                                                //console.log("稀有度是" + j);
                                                 break;
                                             }
                                         }
+                                        //通过卡包类型获取卡池中的牌
                                         userCardDao.getCardInfoByPackage(master,  j, packageType, function(flag, msg, rs){
-                                            //console.log(result);
                                             if(flag){
+                                                //随机将此稀有度的牌加入到card的后面
                                                 card.push(rs[Math.floor(Math.random() * rs.length)]);
-                                                
+                                                //如果卡牌的长度到了5的话
                                                 if(card.length == 5){
-                                                    //console.log(card);
+                                                    //将卡包的状态改为已经开启
                                                     userCardDao.renewCardPackageStatus(master, userId, packageId, function(flag, msg, rs){
                                                         if(flag){
                                                             //console.log( ' 开包标志添加成功' + msg);
@@ -300,8 +394,9 @@ exports.useCardPackage = function(packageId, packageType, userId, fn){
                                                             fn(false, '开包标志添加异常' + msg);
                                                         }
                                                     });
+                                                    //将5张card添加到用户卡牌中
                                                     for(i = 0; i < 5; i++){
-                                                        //console.log(card[i]);
+                                                        //添加一张牌
                                                         userCardDao.addUserCard(master, userId, card[i].id, function(flag, msg, rs){
                                                             if(flag){
                                                                 //console.log( ' 添加卡牌成功' + msg);
@@ -314,6 +409,7 @@ exports.useCardPackage = function(packageId, packageType, userId, fn){
                                                             }
                                                         });
                                                     }
+                                                    //返回card数组
                                                     fn(true, ' 开包流程成功', card);
                                                 }
                                             }else{

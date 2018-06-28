@@ -148,7 +148,7 @@ exports.deleteUserCard = function(connection, userId, cardId, userCardId, fn){
 }
 
 /**
- * 删除用户卡组 卡牌
+ * 删除用户 全部卡组中全部的 某 卡牌 
  * @param cardId
  * @param fn
  */
@@ -158,7 +158,7 @@ exports.deleteUserDeckCard = function(connection, userId, cardId, userCardId, fn
             function (error, results, fields) {
                 if (error) throw error;
 
-                if (results != null && results.affectedRows != 0) {
+                if (results != null && results.affectedRows >= 0) {
                     logger.debug(JSON.stringify(results))
                     fn(true, 'Ok', results);
                 } else {
@@ -171,7 +171,30 @@ exports.deleteUserDeckCard = function(connection, userId, cardId, userCardId, fn
         fn(false, '删除数据异常'+e.stack);
     }
 }
+/**
+ * 删除用户 某卡组 全部卡牌
+ * @param deckId
+ * @param fn
+ */
+exports.deleteUserDeckCards = function(connection, userId, deckId, fn){
+    try {
+        connection.query('delete from user_deck_card where user_id=? and deck_id=?', [userId,deckId],
+            function (error, results, fields) {
+                if (error) throw error;
 
+                if (results != null && results.affectedRows >= 0) {
+                    logger.debug(JSON.stringify(results))
+                    fn(true, 'Ok', results);
+                } else {
+                    logger.debug("删除数据行数0 userId" + userId + " deckId" + deckId);
+                    fn(false, '删除数据行数0', results);
+                }
+            });
+    } catch (e) {
+        logger.info("删除数据错误" + e.stack);
+        fn(false, '删除数据异常'+e.stack);
+    }
+}
 /**
  * 添加用户卡组
  * @param cardId
@@ -211,25 +234,8 @@ exports.deleteUserDeck = function(connection, userId, deckId, fn){
                 if (error) throw error;
 
                 if (results != null && results.affectedRows != 0) {
-                    logger.debug(JSON.stringify(results))
-
-                    try {
-                        connection.query('DELETE FROM user_deck_card where user_id=? and deck_id=?', [userId,deckId],
-                            function (error, results, fields) {
-                                if (error) throw error;
-                
-                                if (results != null && results.affectedRows != 0) {
-                                    logger.debug(JSON.stringify(results))
-                                    fn(true, '用户删除卡组成功', results);
-                                } else {
-                                    logger.debug("删除卡组内卡牌套失败");
-                                    fn(false, '删除卡组内卡牌套失败', results);
-                                }
-                            });
-                    } catch (e) {
-                        logger.info("删除卡组内卡牌套失败" + e.stack);
-                        fn(false, '删除卡组内卡牌套失败'+e.stack);
-                    }
+                    logger.debug(JSON.stringify(results));
+                    fn(true, '用户删除卡组成功', results);
                 } else {
                     logger.debug("用户删除卡组失败");
                     fn(false, '用户删除卡组失败', results);
@@ -292,12 +298,12 @@ exports.renewCardPackageStatus = function(connection, userId, userCardPackageId,
 }
 
 /**
- * 查询卡包状态
+ * 查询单个卡包信息
  * @param userId
  * @param userCardPackageId
  * @param fn
  */
-exports.getCardPackageStatus = function(connection, userId, userCardPackageId, fn){
+exports.getCardPackageInfo = function(connection, userId, userCardPackageId, fn){
     try {
         connection.query('select t.* from user_card_package t where t.id = ?', [userCardPackageId],
             function (error, results, fields) {
@@ -418,5 +424,36 @@ exports.addUserCard = function(connection, userId, cardId, fn){
     } catch (e) {
         logger.info("用户新增卡牌失败" + e.stack);
         fn(false, '用户新增卡牌失败'+e.stack);
+    }
+}
+
+/**
+ * @主要功能:用户卡组新增一张卡牌
+ * @author C14
+ * @Date 2018/6/27 16:44
+ * @param connection
+ * @param userId
+ * @param deckId
+ * @param cardId
+ * @param userCardId
+ * @param fn
+ */
+exports.addUserDeckCard = function(connection, userId, deckId, cardId, userCardId, fn){
+    try {
+        connection.query('insert into user_deck_card(user_id,deck_id,card_id,user_card_id)values(?,?,?,?)', [userId, deckId, cardId, userCardId],
+            function (error, results, fields) {
+                if (error) throw error;
+
+                if (results != null && results.insertId != 0) {
+                    logger.debug(JSON.stringify(results))
+                    fn(true, 'Ok', results);
+                } else {
+                    logger.debug("用户卡组新增卡牌失败");
+                    fn(false, '用户卡组新增卡牌失败', results);
+                }
+            });
+    } catch (e) {
+        logger.info("用户卡组新增卡牌失败" + e.stack);
+        fn(false, '用户卡组新增卡牌失败'+e.stack);
     }
 }

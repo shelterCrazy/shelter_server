@@ -86,6 +86,38 @@ var init = function(){
         }
     });
     /**
+     * @主要功能:   删除某卡组的全部卡牌
+     * @author C14
+     * @Date 2018/6/15 23:17
+     * deckId
+     * token
+     */
+    app.get('/areadly/deleteAllDeckCards', function (req, res) {
+
+        res.writeHead(200, {'Content-Type': 'application/json'});
+        try{
+            var deckId = req.param("deckId");
+            var token = util.getToken(req);
+
+            if(token == null){
+                res.end(JSON.stringify({"status": '002', "msg": "token获取失败"}));
+            }
+            var userId = util.decode(token);
+
+            //删除卡组卡牌服务
+            userService.deleteDeckCards(deckId, userId, function(flag, msg, results){
+                if(flag){
+                    res.end(JSON.stringify({"status":"200", "msg":"删除卡组全部卡牌成功"}))
+                }else{
+                    res.end(JSON.stringify({"status": '003', "msg": "删除卡组全部卡牌失败:" + msg}));
+                }
+            });
+
+        }catch (e){
+            res.end(JSON.stringify({"status": '001', "msg": e.toString()}));
+        }
+    });
+    /**
      * @主要功能:更新卡组名称
      * @author C14
      * @Date 2018/6/15 23:17
@@ -118,7 +150,94 @@ var init = function(){
             res.end(JSON.stringify({"status": '001', "msg": e.toString()}));
         }
     });
-    
+
+    /**
+     * @主要功能:更新卡组中的全部卡牌
+     * @author C14
+     * @Date 2018/6/27 16:33
+     * deckId
+     * cardId
+     * userCardId
+     * token
+     */
+    app.get('/areadly/renewDeckCard', function (req, res) {
+
+        res.writeHead(200, {'Content-Type': 'application/json'});
+        try{
+            var data = req.param("data");
+            var jsonData = JSON.parse(data);
+            var deckId = req.param("deckId");
+            var token = util.getToken(req);
+
+            if(token == null){
+                res.end(JSON.stringify({"status": '002', "msg": "token获取失败"}));
+            }
+            var userId = util.decode(token);
+
+            //移除卡组中的全部牌
+            userService.deleteDeckCards(deckId, userId, function(flag, msg, results){
+                if(flag){
+                    //添加卡牌服务
+                    var timeflag = 0;
+                    for(var i = 0; i < jsonData.data.length; i++){
+                        userService.addDeckCard(userId, deckId, jsonData.data[i].cardId, jsonData.data[i].userCardId, function(flag, msg, results){
+                            if(flag){
+                                timeflag ++;
+
+                                
+                                if(timeflag >= jsonData.data.length){
+                                    res.end(JSON.stringify({"status": '003', "msg": "更新卡组卡牌成功:" + msg}));
+                                }
+                            }else{
+                                res.end(JSON.stringify({"status": '003', "msg": "更新卡组卡牌失败:" + msg}));
+                            }
+                        });
+                    }
+                }else{
+                    res.end(JSON.stringify({"status": '003', "msg": "更新卡组卡牌失败:" + msg}));
+                }
+            });
+
+        }catch (e){
+            res.end(JSON.stringify({"status": '001', "msg": e.toString()}));
+        }
+    });
+    // /**
+    //  * @主要功能:从卡组中移除一张卡牌
+    //  * @author C14
+    //  * @Date 2018/6/27 16:33
+    //  * deckId
+    //  * cardId
+    //  * userCardId
+    //  * token
+    //  */
+    // app.get('/areadly/removeDeckCard', function (req, res) {
+
+    //     res.writeHead(200, {'Content-Type': 'application/json'});
+    //     try{
+    //         var deckId = req.param("deckId");
+    //         var cardId = req.param("cardId");
+    //         var userCardId = req.param("userCardId");
+    //         var token = util.getToken(req);
+
+    //         if(token == null){
+    //             res.end(JSON.stringify({"status": '002', "msg": "token获取失败"}));
+    //         }
+    //         var userId = util.decode(token);
+
+    //         //移除卡牌服务
+    //         userService.removeDeckCard(userId, deckId, cardId, userCardId, function(flag, msg, results){
+    //             if(flag){
+    //                 res.end(JSON.stringify({"status":"200", "msg":"从卡组中移除卡牌成功"}))
+    //             }else{
+    //                 res.end(JSON.stringify({"status": '003', "msg": "从卡组中移除卡牌失败:" + msg}));
+    //             }
+    //         });
+
+    //     }catch (e){
+    //         res.end(JSON.stringify({"status": '001', "msg": e.toString()}));
+    //     }
+    // });
     /**
      * @主要功能:   使用卡包
      * @author C14
