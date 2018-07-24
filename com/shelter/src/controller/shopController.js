@@ -262,7 +262,7 @@ var init = function(){
             //卡包开启服务
             userService.useCardPackage(packageId, packageType, userId, function(flag, msg, results){
                 if(flag){
-                    res.end(JSON.stringify({"status":"200", "msg":"使用卡包成功: " + msg + " " + results[0].rarity + results[1].rarity + results[2].rarity + results[3].rarity + results[4].rarity}))
+                    res.end(JSON.stringify({"status":"200", "msg":"使用卡包成功: " + msg, "packageCardList":results}))
                 }else{
                     res.end(JSON.stringify({"status": '003', "msg": "使用卡包失败:" + msg}));
                 }
