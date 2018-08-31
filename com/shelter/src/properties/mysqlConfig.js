@@ -18,7 +18,7 @@ module.exports = {
     },
     slave:[
       {
-        name:"slave2",
+        name:"slave1",
         host:"39.106.67.112",
         user:"root",
         password:"123456",

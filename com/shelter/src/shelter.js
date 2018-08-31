@@ -37,7 +37,7 @@ connectUtil.init(args[0]);
 loggerUtil.init(args[0]);
 var logger = loggerUtil.getInstance();
 //初始化redis
-redisUtil.init(args[0]);
+// redisUtil.init(args[0]);
 /** util 初始化结束 */
 
 
@@ -51,6 +51,12 @@ var match = require('./controller/matchControllor'); //匹配相关
 
 //业务服务
 var userService = require('./service/UserService');  //用户服务
+
+
+logger.info("this is info test");
+logger.warn("this is warn test");
+logger.error("this is error test");
+
 
 
 

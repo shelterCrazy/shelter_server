@@ -7,7 +7,7 @@
 var mysql = require('mysql');
 var mysqlconf = require("../properties/mysqlConfig");
 var poolCluster;
-var loggerUtil = require('../util/logFactroy');
+var loggerUtil = require('../logFactroy');
 var logger = loggerUtil.getInstance();
 
 //json用法
