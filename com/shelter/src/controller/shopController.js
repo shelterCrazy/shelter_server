@@ -186,7 +186,7 @@ var init = function(){
 
                                 
                                 if(timeflag >= jsonData.data.length){
-                                    res.end(JSON.stringify({"status": '003', "msg": "更新卡组卡牌成功:" + msg}));
+                                    res.end(JSON.stringify({"status": '200', "msg": "更新卡组卡牌成功:" + msg}));
                                 }
                             }else{
                                 res.end(JSON.stringify({"status": '003', "msg": "更新卡组卡牌失败:" + msg}));
