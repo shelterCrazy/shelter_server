@@ -123,7 +123,33 @@ exports.getUserInfo = function(connection, userId, fn){
     }
 }
 
+/**
+ * @主要功能:   修改用户金币数量
+ * @author kenan
+ * @Date 2018/9/1 21:03
+ * @param num      修改金币数量  +增加   -减少
+ * @param userId
+ * @param fn
+ */
+exports.updateUserMoney = function(connection, num, userId, fn){
 
+    try {
+        connection.query('update user_info set money = money + ? where user_id = ? and (money + ?) >= 0', [num,userId,num],
+            function (error, results) {
+                if (error) throw error;
+
+                if (results != null && results.affectedRows != 0) {
+                    logger.debug(JSON.stringify(results))
+                    fn(true, "ok", results);
+                }else{
+                    fn(false, "修改失败/金币不足", results);
+                }
+            });
+    } catch (e) {
+        logger.info("修改错误" + e.stack);
+        fn(false, '修改错误'+e.stack);
+    }
+}
 /**
  * @主要功能:   修改用户晶尘数量
  * @author kenan

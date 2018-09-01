@@ -202,42 +202,41 @@ var init = function(){
             res.end(JSON.stringify({"status": '001', "msg": e.toString()}));
         }
     });
-    // /**
-    //  * @主要功能:从卡组中移除一张卡牌
-    //  * @author C14
-    //  * @Date 2018/6/27 16:33
-    //  * deckId
-    //  * cardId
-    //  * userCardId
-    //  * token
-    //  */
-    // app.get('/areadly/removeDeckCard', function (req, res) {
 
-    //     res.writeHead(200, {'Content-Type': 'application/json'});
-    //     try{
-    //         var deckId = req.param("deckId");
-    //         var cardId = req.param("cardId");
-    //         var userCardId = req.param("userCardId");
-    //         var token = util.getToken(req);
+    /**
+     * @主要功能:用户购买卡包
+     * @author C14
+     * @Date 2018/9/1 21:06
+     * packageType
+     * packageNum
+     * token
+     */
+    app.get('/areadly/purchasePackage', function (req, res) {
 
-    //         if(token == null){
-    //             res.end(JSON.stringify({"status": '002', "msg": "token获取失败"}));
-    //         }
-    //         var userId = util.decode(token);
+        res.writeHead(200, {'Content-Type': 'application/json'});
+        try{
+            var packageType = req.param("packageType");
+            var packageNum = req.param("packageNum");
+            var token = util.getToken(req);
 
-    //         //移除卡牌服务
-    //         userService.removeDeckCard(userId, deckId, cardId, userCardId, function(flag, msg, results){
-    //             if(flag){
-    //                 res.end(JSON.stringify({"status":"200", "msg":"从卡组中移除卡牌成功"}))
-    //             }else{
-    //                 res.end(JSON.stringify({"status": '003', "msg": "从卡组中移除卡牌失败:" + msg}));
-    //             }
-    //         });
+            if(token == null){
+                res.end(JSON.stringify({"status": '002', "msg": "token获取失败"}));
+            }
+            var userId = util.decode(token);
 
-    //     }catch (e){
-    //         res.end(JSON.stringify({"status": '001', "msg": e.toString()}));
-    //     }
-    // });
+            //购买卡包服务
+            userService.purchasePackage(userId, packageType, packageNum, function(flag, msg, results){
+                if(flag){
+                    res.end(JSON.stringify({"status":"200", "msg":"购买卡包成功"}))
+                }else{
+                    res.end(JSON.stringify({"status": '003', "msg": "购买卡包失败:" + msg}));
+                }
+            });
+
+        }catch (e){
+            res.end(JSON.stringify({"status": '001', "msg": e.toString()}));
+        }
+    });
     /**
      * @主要功能:   使用卡包
      * @author C14

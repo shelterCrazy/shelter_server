@@ -3,6 +3,7 @@
  */
 var userDao = require('../dao/userDao');
 var userCardDao = require('../dao/userCardDao');
+var userPackageDao = require('../dao/userPackageDao');
 var loggerUtil = require('../util/logFactroy');
 var logger = loggerUtil.getInstance();
 var connectUtil = require('../util/ConnectUtil');
@@ -312,6 +313,100 @@ exports.renewDeckName = function(deckId, userId, newDeckName, fn){
     } catch (e) {
         logger.info(" 修改错误");
         fn(false, ' 修改异常'+e.stack);
+    }
+}
+/**
+ * @主要功能:购买卡包
+ * @author C14
+ * @Date 2018/9/1 21:11
+ * @param userId
+ * @param packageType
+ * @param packageNum
+ * @param fn
+ */
+exports.purchasePackage = function(userId, packageType, packageNum, fn){
+    try{
+        connectUtil.getMaster(function (master) {
+            if(master == null){
+                fn(false, '获取链接失败');
+                return ;
+            }
+
+            //开启事务
+            master.beginTransaction(function (err) {
+                if (err) {
+                    throw err;
+                }
+
+                //获取用户金币数量
+                userDao.getUserInfo(master, userId, function (flag, msg, rs) {
+                    if(flag){
+                        var moneyneed = rs[0].money; //玩家拥有的金币
+
+                        userPackageDao.getPackageInfo(master, packageType, function (flag, msg, rs) {
+                            if(flag){
+                                var moneyRequired = rs[0].package_money;
+                                var packageName = rs[0].package_name;
+
+                                //用户金币>卡牌合成需求金币数量
+                                if(Number(moneyneed) >= Number(moneyRequired) * packageNum){
+                                    var count = 0;
+                                    for(var i = 0;i < packageNum;i++)
+                                    {
+                                        //插入用户卡包
+                                        userPackageDao.addUserPackage(master, userId, packageName, packageType, function(flag, msg, rs){
+                                            if(flag){
+                                                //减少用户金币数量
+                                                userDao.updateUserMoney(master, -Number(moneyRequired), userId, function(flag, msg, rs){
+                                                    if(flag){
+                                                        //没问题就提交
+                                                        logger.debug("transaction commit");
+                                                        master.commit(function(err){
+                                                            if(err){
+                                                                rollBack(master);
+                                                            }
+                                                            count ++;
+                                                            if(count == packageNum){
+                                                                master.release();
+                                                                fn(true, 'OK');
+                                                            }
+                                                            
+                                                        });
+                                                    }else{
+                                                        rollBack(master);
+                                                        master.release();
+                                                        fn(false, '购买卡包异常' + msg);
+                                                    }
+                                                });
+                                            }else{
+                                                rollBack(master);
+                                                master.release();
+                                                fn(false, '购买卡包异常' + msg);
+                                            }
+                                        });
+                                    }
+                                }else{
+                                    rollBack(master);
+                                    master.release();
+                                    fn(false, '金币不足');
+                                }
+                            }else{
+                                rollBack(master);
+                                master.release();
+                                fn(false, '购买卡包异常' + msg);
+                            }
+                        });
+                    }else{
+                        rollBack(master);
+                        master.release();
+                        fn(false, '购买卡包异常' + msg);
+                    }
+                });
+            });
+        });
+    }catch (e){
+        logger.info("购买卡包错误" + e.stack);
+        fn(false, '购买卡包异常' + e.stack);
     }
 }
 /**
