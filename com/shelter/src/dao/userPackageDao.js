@@ -75,12 +75,10 @@ exports.addUserPackages = function(connection, userId, packageName, packageType,
         for(var i = 0;i < packageNum; i++){
             values[i] = [userId,packageName,packageType,new Date(),0];
         }
-        console.log("OK1");
         connection.query('insert into user_card_package(user_id,package_name,package_type,create_date,status) VALUES ?', [values],
             function (error, results, fields) {
                 console.log(error);
                 if (error) throw error;
-                console.log("OK2");
                 if (results != null && results.insertId != 0) {
                     logger.debug(JSON.stringify(results))
                     fn(true, 'Ok', results);
