@@ -37,7 +37,7 @@ connectUtil.init(args[0]);
 loggerUtil.init(args[0]);
 var logger = loggerUtil.getInstance();
 //初始化redis
-// redisUtil.init(args[0]);
+redisUtil.init(args[0]);
 /** util 初始化结束 */
 
 
