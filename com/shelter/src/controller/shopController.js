@@ -33,6 +33,7 @@ var init = function(){
         try{
             var deckName = req.param("deckName");
             var deckSort = req.param("deckSort");
+            var deckType = req.param("deckType");
             var token = util.getToken(req);
 
             if(token == null){
@@ -41,7 +42,7 @@ var init = function(){
             var userId = util.decode(token);
 
             //合成卡牌服务
-            userService.addDeck(deckName, deckSort, userId, function(flag, msg, results){
+            userService.addDeck(deckName, deckSort, deckType, userId, function(flag, msg, results){
                 if(flag){
                     res.end(JSON.stringify({"status":"200", "msg":"卡组创建成功"}))
                 }else{
