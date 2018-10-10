@@ -81,7 +81,7 @@ exports.getUserDeckCard = function(connection, userId, deckId, fn){
                 if (error) throw error;
                 
                 //这里就是改为允许读取一个空的卡组
-                if (results != null && results.length >= 0) {
+                if (results != null && results.length > 0) {
                     logger.debug(JSON.stringify(results))
                     fn(true, 'Ok', results);
                 } else {
