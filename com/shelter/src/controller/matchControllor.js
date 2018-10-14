@@ -1,5 +1,5 @@
 /**
- * kenan 游戏匹配模块控制器
+ * kenan 游戏匹配模块控制器  作废
  */
 
 var util = require('../util/util');
@@ -35,7 +35,7 @@ var init = function(){
             }catch(err){
                 socket.to(socket.id).emit('msg', {status: '001', msg: '添加匹配失败 error:' + err});
             }
-            
+
             //返回匹配结果  只有每次新加入人才有可能匹配成功  所以在申请匹配环节处理匹配
             redis.getClient().smembers('match', function(err, list){
                 while(true){

@@ -46,16 +46,11 @@ var indexControllor = require('./controller/indexControllor');  //登陆注册
 var userCard = require('./controller/userCardController');  //用户卡牌
 var interceptor = require('./Interceptor/LoginInterceptor');   //拦截器中间件
 var shop = require('./controller/shopController'); //商店相关
-var match = require('./controller/matchControllor'); //匹配相关
+//var match = require('./controller/matchControllor'); //匹配相关   使用匹配机matcher
 
 
 //业务服务
 var userService = require('./service/UserService');  //用户服务
-
-
-logger.info("this is info test");
-logger.warn("this is warn test");
-logger.error("this is error test");
 
 
 
@@ -79,8 +74,6 @@ app.use(express.static('public'));
 /*全局变量  常量*/
 //房间信息记录
 var roomsInfo = []
-//战斗申请池
-var fightSeq = []
 //消息状态枚举
 var msgEnum= {
     success:200,   //普通消息
@@ -98,8 +91,8 @@ indexControllor(app);
 userCard(app);
 //商店相关
 shop(app);
-//匹配相关
-match(index);
+//匹配相关   作废 使用匹配机
+//match(index);
 
 /** 初始化结束 */
 

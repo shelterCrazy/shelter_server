@@ -1,10 +1,10 @@
 module.exports = {
     dev: {
-        host: "127.0.0.1",
-        password: "123456QWE"
+        host: "39.106.67.112",
+        password: "kenanCrazy*r3"
     },
     release:{
         host: "127.0.0.1",
-        password: "123456"
+        password: "kenanCrazy*r3"
     }
 }
