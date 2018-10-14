@@ -79,7 +79,8 @@ exports.getUserDeckCard = function(connection, userId, deckId, fn){
         connection.query('select t.* from user_deck_card t where t.deck_id = ? and t.user_id = ?', [deckId, userId],
             function (error, results, fields) {
                 if (error) throw error;
-
+                
+                //这里就是改为允许读取一个空的卡组
                 if (results != null && results.length > 0) {
                     logger.debug(JSON.stringify(results))
                     fn(true, 'Ok', results);
@@ -200,9 +201,9 @@ exports.deleteUserDeckCards = function(connection, userId, deckId, fn){
  * @param cardId
  * @param fn
  */
-exports.addUserDeck = function(connection, userId, deck_name, deck_sort, fn){
+exports.addUserDeck = function(connection, userId, deck_name, deck_sort, deck_type, fn){
     try {
-        connection.query('insert into user_deck(user_id,deck_name,deck_sort)values(?,?,?)', [userId,deck_name,deck_sort],
+        connection.query('insert into user_deck(user_id,deck_name,deck_sort,deck_type)values(?,?,?,?)', [userId,deck_name,deck_sort, deck_type],
             function (error, results, fields) {
                 if (error) throw error;
 

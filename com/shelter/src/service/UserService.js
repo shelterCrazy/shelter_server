@@ -100,7 +100,7 @@ exports.register = function (userName, password, fn) {
  * @param userId
  * @param fn
  */
-exports.addDeck = function (deckName, deckSort, userId, fn) {
+exports.addDeck = function (deckName, deckSort, deckType, userId, fn) {
     try {
         connectUtil.getMaster(function (master) {
             if (master == null) {
@@ -112,7 +112,7 @@ exports.addDeck = function (deckName, deckSort, userId, fn) {
                 if (err) {
                     throw err;
                 }
-                userCardDao.addUserDeck(master, userId, deckName, deckSort, function (flag, msg, rs) {
+                userCardDao.addUserDeck(master, userId, deckName, deckSort, deckType, function (flag, msg, rs) {
                     if (flag) {
                         //没问题就提交
                         logger.debug("transaction commit");
