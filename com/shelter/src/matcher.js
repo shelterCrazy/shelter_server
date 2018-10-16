@@ -15,9 +15,11 @@ var util = require('./util/util');
 var connectUtil = require('./util/ConnectUtil');
 var loggerUtil = require('./util/logFactroy');
 var redisUtil = require('./util/redisUtil');
+var config = require('./properties/shelterConfig');
+
 
 //功能模块
-var interceptor = require('./Interceptor/LoginInterceptor');   //拦截器中间件
+var interceptor = require('./Interceptor/MatcherInterceptor');   //拦截器中间件
 
 
 /**util 初始化 */
@@ -34,6 +36,13 @@ loggerUtil.init(args[0]);
 var logger = loggerUtil.getInstance();
 //初始化redis
 redisUtil.init(args[0]);
+
+var port = 3000;
+if(args[0] == "dev"){
+    port = config.dev.matcherPort;
+}else{
+    port = config.release.matcherPort;
+}
 /** util 初始化结束 */
 
 
@@ -41,7 +50,6 @@ redisUtil.init(args[0]);
 
 /**  初始化 */
 /*express初始化*/
-var port = 3000;
 var server = http.Server(app);
 server.listen(port);    //必须是 http设置端口   app.listen(port) 并不会将端口给server
 
@@ -64,19 +72,18 @@ interceptor(app);
 
 //接口 接收匹配请求
 app.post("/matcher/appealMatch", function (req, res) {
-
-});
-
+    // res.end(JSON.stringify({"host":req.header("host"), "ip":req.ip, "method":req.method}));
+    res.json(req.body);
+})
 
 
 /**资源*/
-enum status = {
+var status = {
     start:1,
     busy:2,
     stop:3
-}
+};
 var matchPool;
-matchPool.size = 0;
 
 
 

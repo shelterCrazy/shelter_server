@@ -11,7 +11,6 @@ var session = require('express-session');
 var bodyparser = require('body-parser');
 var util = require('../util/util.js');
 var loggerUtil = require('../util/logFactroy');
-var redis = require('../util/redisUtil');
 var app;
 
 module.exports = function(appL){
@@ -33,6 +32,7 @@ var init = function(){
     app.use(bodyparser.urlencoded({ extended: false }));
     // parse application/json
     app.use(bodyparser.json());
+
 
 
     //登陆拦截中间件
@@ -71,31 +71,6 @@ var init = function(){
                 return;
             }
         }
-    });
-
-
-    /**匹配机用拦截器
-     * 1.matcher请求只接收redis中注册的 serverList
-     *
-     */
-    app.use("/matcher", function (req, res, next) {
-        redis.getClient().smembers('serverList', function(err, list) {
-
-            if(err){
-                //redis错误
-            }
-            if (list.length <= 1 || list == null || list == undefined) {
-                return ;
-            }else{
-
-                //获取请求头和注册的list中的服务器地址做对比  非服务不得请求
-                var host = req.header("host");
-                for (var model in list){
-                    //比较
-                }
-            }
-        });
-        next();
     });
 
 

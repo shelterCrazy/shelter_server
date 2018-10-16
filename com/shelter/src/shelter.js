@@ -17,6 +17,7 @@ var util = require('./util/util');
 var connectUtil = require('./util/ConnectUtil');
 var loggerUtil = require('./util/logFactroy');
 var redisUtil = require('./util/redisUtil');
+var config = require('./properties/shelterConfig');
 
 
 /**util 初始化 */
@@ -38,6 +39,13 @@ loggerUtil.init(args[0]);
 var logger = loggerUtil.getInstance();
 //初始化redis
 redisUtil.init(args[0]);
+
+var port = 3000;
+if(args[0] == "dev"){
+    port = config.dev.applicationPort;
+}else{
+    port = config.release.applicationPort;
+}
 /** util 初始化结束 */
 
 
@@ -57,7 +65,6 @@ var userService = require('./service/UserService');  //用户服务
 
 /**  初始化 */
 /*express初始化*/
-var port = 3000;
 var server = http.Server(app);
 server.listen(port);    //必须是 http设置端口   app.listen(port) 并不会将端口给server
 var io =  socket(server,{
@@ -102,10 +109,10 @@ shop(app);
 
 
 //io中间件
-index.use(function(socket, next){
-    logger.debug("nameSpace.use");
-    next();
-});
+// index.use(function(socket, next){
+//     logger.debug("nameSpace.use");
+//     next();
+// });
 
 
 //战斗社交场景socket
