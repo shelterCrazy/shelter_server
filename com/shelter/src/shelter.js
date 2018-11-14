@@ -67,12 +67,12 @@ var userService = require('./service/UserService');  //用户服务
 /*express初始化*/
 var server = http.Server(app);
 server.listen(port);    //必须是 http设置端口   app.listen(port) 并不会将端口给server
+
+/*socket.io 初始化*/
 var io =  socket(server,{
     pingTimeout: 6000,
     pingInterval: 10000
 });
-
-/*socket.io 初始化*/
 var index = io.of("/index"); //index 空间
 
 //静态资源
@@ -104,6 +104,13 @@ shop(app);
 /** 初始化结束 */
 
 
+
+
+//启动注册服务
+var regist = function(){
+    let client = redisUtil.getClient();
+    client.sadd('serverList', );
+}
 
 
 

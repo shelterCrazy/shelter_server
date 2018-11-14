@@ -7,7 +7,7 @@ module.exports = {
       defaultSelector:"RR"
     },
     master:{
-      host:"39.106.67.112",
+      host:"47.254.18.39",
       user:"c14",
       password:"shelterC14!",
       database:"shelter",
@@ -19,7 +19,7 @@ module.exports = {
     slave:[
       {
         name:"slave1",
-        host:"39.106.67.112",
+        host:"47.254.18.39",
         user:"c14",
         password:"shelterC14!",
         database:"shelter",
@@ -38,7 +38,7 @@ module.exports = {
       defaultSelector:"RR"
     },
     master:{
-      host:"39.106.67.112",
+      host:"47.254.18.39",
       user:"c14",
       password:"shelterC14!",
       database:"shelter",
@@ -50,7 +50,7 @@ module.exports = {
     slave:[
       {
         name:"slave1",
-        host:"39.106.67.112",
+        host:"47.254.18.39",
         user:"c14",
         password:"shelterC14!",
         database:"shelter",
@@ -61,7 +61,7 @@ module.exports = {
       },
       {
         name:"slave2",
-        host:"39.106.67.112",
+        host:"47.254.18.39",
         user:"c14",
         password:"shelterC14!",
         database:"shelter",
