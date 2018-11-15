@@ -109,7 +109,7 @@ shop(app);
 //启动注册服务
 var regist = function(){
     let client = redisUtil.getClient();
-    client.sadd('serverList', );
+    client.sadd('serverList', "ip");
 }
 
 
