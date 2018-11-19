@@ -10,6 +10,7 @@ var http = require('http');
 var express = require('express');
 var app = express();
 var socket = require('socket.io');
+var os = require('os');
 
 
 //公共服务
@@ -20,17 +21,18 @@ var redisUtil = require('./util/redisUtil');
 var config = require('./properties/shelterConfig');
 
 
-/**util 初始化 */
-/*启动参数*/
+/** 启动参数*/
 //process是一个全局对象，argv返回的是一组包含命令行参数的数组。
 //第一项为”node”，第二项为执行的js的完整路径，后面是附加在命令行后的参数
 var args = process.argv.splice(2)
 if(args.length == 0){
     args[0] = "dev";
+    args[1] = config.dev.ip;
 }
 console.log(args);
 
-/*util初始化*/
+
+/** util初始化*/
 //引入外界js的方式分流书写app功能
 //初始化数据库链接
 connectUtil.init(args[0]);
@@ -67,6 +69,7 @@ var userService = require('./service/UserService');  //用户服务
 /*express初始化*/
 var server = http.Server(app);
 server.listen(port);    //必须是 http设置端口   app.listen(port) 并不会将端口给server
+
 
 /*socket.io 初始化*/
 var io =  socket(server,{
@@ -109,9 +112,14 @@ shop(app);
 //启动注册服务
 var regist = function(){
     let client = redisUtil.getClient();
-    client.sadd('serverList', "ip");
+    console.log("args[1]" + args[1]);
+    client.sadd('serverList', args[1], function(err){
+        client.smembers('serverList', function(err, list){
+            console.log("client.smembers('serverList')\n" + JSON.stringify(list));
+        });
+    });
 }
-
+regist();
 
 
 
