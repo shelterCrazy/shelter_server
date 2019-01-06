@@ -122,11 +122,6 @@ var regist = function(){
 regist();
 
 
-//探测服务
-app.post("/detect", function (req, res) {
-    res.end(JSON.stringify({"host":req.header("host"), "ip":req.ip, "method":req.method}));
-})
-
 
 //io中间件
 // index.use(function(socket, next){
@@ -254,27 +249,27 @@ index.on("connection", function (socket) {
 
 
     //room消息广播    作废
-    // socket.on('room', function(data){
-    //     console.log("room内消息广播");
-    //     if(data.type != null && data.type != ""){
-    //         var type = data.type;
-    //         var room = data.room;
-    //         var leaveFlag = data.leaveFlag;
-    //
-    //         var event;
-    //         switch (type){   //不同房间不同事件
-    //             case 'roomChat': event = 'roomChat'; break;
-    //             case 'roomHit': event = 'roomHit'; break;
-    //             default:
-    //                 break;
-    //         }
-    //         if(leaveFlag){
-    //         }else{
-    //             socket.join(room);
-    //             socket.to(room).emit(event, {'status':200, 'msg':data.msg});
-    //         }
-    //     }else{
-    //         new Error('进入room失败')
-    //     }
-    // });
+    socket.on('room', function(data){
+        console.log("room内消息广播");
+        if(data.type != null && data.type != ""){
+            var type = data.type;
+            var room = data.room;
+            var leaveFlag = data.leaveFlag;
+
+            var event;
+            switch (type){   //不同房间不同事件
+                case 'roomChat': event = 'roomChat'; break;
+                case 'roomHit': event = 'roomHit'; break;
+                default:
+                    break;
+            }
+            if(leaveFlag){
+            }else{
+                socket.join(room);
+                socket.to(room).emit(event, {'status':200, 'msg':data.msg});
+            }
+        }else{
+            new Error('进入room失败')
+        }
+    });
 });

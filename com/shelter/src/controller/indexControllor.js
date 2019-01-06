@@ -42,27 +42,26 @@ var init = function(){
     });
 
 
-    //test
     //express web方式自动路由方式
-    // app.get('/queryAllUser', function (req, res) {
-    //
-    //     res.writeHead(200, {'Content-Type': 'application/json'});
-    //     try{
-    //         //方法二  回掉函数方式同步
-    //         userService.userBack(function(flag, msg, results){
-    //             if(flag){
-    //                 res.write(JSON.stringify(results));
-    //                 res.end();
-    //                 return;
-    //             }else{
-    //                 res.end(JSON.stringify({"status": '001', "msg": "查无数据" + msg}));
-    //                 return;
-    //             }
-    //         });
-    //     }catch (e){
-    //         res.end(JSON.stringify({"status": '001', "msg": e.toString()}));
-    //     }
-    // });
+    app.get('/queryAllUser', function (req, res) {
+
+        res.writeHead(200, {'Content-Type': 'application/json'});
+        try{
+            //方法二  回掉函数方式同步
+            userService.userBack(function(flag, msg, results){
+                if(flag){
+                    res.write(JSON.stringify(results));
+                    res.end();
+                    return;
+                }else{
+                    res.end(JSON.stringify({"status": '001', "msg": "查无数据" + msg}));
+                    return;
+                }
+            });
+        }catch (e){
+            res.end(JSON.stringify({"status": '001', "msg": e.toString()}));
+        }
+    });
 
 
     //登陆
