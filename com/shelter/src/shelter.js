@@ -10,72 +10,37 @@ var http = require('http');
 var express = require('express');
 var app = express();
 var socket = require('socket.io');
-var os = require('os');
-
-
-//公共服务
-var util = require('./util/util');
-var connectUtil = require('./util/ConnectUtil');
-var loggerUtil = require('./util/logFactroy');
-var redisUtil = require('./util/redisUtil');
-var config = require('./properties/shelterConfig');
-
-
-/** 启动参数*/
-//process是一个全局对象，argv返回的是一组包含命令行参数的数组。
-//第一项为”node”，第二项为执行的js的完整路径，后面是附加在命令行后的参数
-var args = process.argv.splice(2)
-if(args.length == 0){
-    args[0] = "dev";
-    args[1] = config.dev.ip;
-}
-console.log(args);
-
-
-/** util初始化*/
-//引入外界js的方式分流书写app功能
-//初始化数据库链接
-connectUtil.init(args[0]);
-//初始化日志配置
-loggerUtil.init(args[0]);
-var logger = loggerUtil.getInstance();
-//初始化redis
-redisUtil.init(args[0]);
-
-var port = 3000;
-if(args[0] == "dev"){
-    port = config.dev.applicationPort;
-}else{
-    port = config.release.applicationPort;
-}
-/** util 初始化结束 */
-
 
 //功能模块
 var indexControllor = require('./controller/indexControllor');  //登陆注册
 var userCard = require('./controller/userCardController');  //用户卡牌
 var interceptor = require('./Interceptor/LoginInterceptor');   //拦截器中间件
 var shop = require('./controller/shopController'); //商店相关
-//var match = require('./controller/matchControllor'); //匹配相关   使用匹配机matcher
+var match = require('./controller/matchControllor'); //商店相关
 
+
+//公共服务
+var util = require('./util/util');
+var connectUtil = require('./util/ConnectUtil');
+var loggerUtil = require('./util/logFactroy');
+//var redisUtil = require('./util/redisUtil');
 
 //业务服务
 var userService = require('./service/UserService');  //用户服务
 
 
 
-
 /**  初始化 */
 /*express初始化*/
+var port = 3000;
 var server = http.Server(app);
 server.listen(port);    //必须是 http设置端口   app.listen(port) 并不会将端口给server
-
-
-/*socket.io 初始化*/
 var io =  socket(server,{
     pingTimeout: 6000,
     pingInterval: 10000
 });
+
+/*socket.io 初始化*/
 var index = io.of("/index"); //index 空间
 
 //静态资源
@@ -84,6 +49,8 @@ app.use(express.static('public'));
 /*全局变量  常量*/
 //房间信息记录
 var roomsInfo = []
+//战斗申请池
+var fightSeq = []
 //消息状态枚举
 var msgEnum= {
     success:200,   //普通消息
@@ -91,6 +58,28 @@ var msgEnum= {
     error:2,    //错误消息
 }
 
+
+
+
+/*启动参数*/
+//process是一个全局对象，argv返回的是一组包含命令行参数的数组。
+//第一项为”node”，第二项为执行的js的完整路径，后面是附加在命令行后的参数
+var args = process.argv.splice(2)
+console.log(args);
+if(args.length == 0){
+    args[0] = "dev";
+}
+
+
+/*util初始化*/
+//引入外界js的方式分流书写app功能
+//初始化数据库链接
+connectUtil.init(args[0]);
+//初始化日志配置
+loggerUtil.init(args[0]);
+var logger = loggerUtil.getInstance();
+//初始化redis
+//redisUtil.init(args[0]);
 
 /*controller 初始化*/
 //拦截器
@@ -101,38 +90,21 @@ indexControllor(app);
 userCard(app);
 //商店相关
 shop(app);
-//匹配相关   作废 使用匹配机
-//match(index);
+//匹配相关
+match(index);
 
 /** 初始化结束 */
 
 
 
 
-//启动注册服务
-var regist = function(){
-    let client = redisUtil.getClient();
-    console.log("args[1]" + args[1]);
-    client.sadd('serverList', args[1], function(err){
-        client.smembers('serverList', function(err, list){
-            console.log("client.smembers('serverList')\n" + JSON.stringify(list));
-        });
-    });
-}
-regist();
-
-
-//探测服务
-app.post("/detect", function (req, res) {
-    res.end(JSON.stringify({"host":req.header("host"), "ip":req.ip, "method":req.method}));
-})
 
 
 //io中间件
-// index.use(function(socket, next){
-//     logger.debug("nameSpace.use");
-//     next();
-// });
+index.use(function(socket, next){
+    logger.debug("nameSpace.use");
+    next();
+});
 
 
 //战斗社交场景socket
@@ -192,6 +164,14 @@ index.on("connection", function (socket) {
             }
         });
     });
+    // //退出登陆操作
+    // socket.on('logout', function(data){
+    //     var token = data.token;
+    //     console.log(socket.id);
+    //      //登陆token移除token池
+    //     util.splice(util.indexOf(token),1);
+    //     socket.emit('loginOut',{'status':msgEnum.success,'msg':msg, 'results': token});
+    // });
 
     //广播信息
     socket.on('broadcastMsg', function(data){
@@ -207,74 +187,133 @@ index.on("connection", function (socket) {
 
     //进入房间
     socket.on('join', function(data){
-        console.log('join');
         if(data.type != null && data.type != ""){
             socket.join(data.room);
-            // 将用户昵称加入房间名单中
-            if (!roomsInfo[data.room]) {
-                roomsInfo[data.room] = [];
-            }
-            roomsInfo[data.room].push(util.decode(data.token));
 
+            for(var i = 0 ;i < roomsInfo.length; i ++)
+            {
+                if(roomsInfo[i].room === data.room)
+                {
+                    roomsInfo[i].playerSocket.push(socket);
+                    //房间状态转为准备
+                    roomsInfo[i].state = 'ready';
+                    roomsInfo[i].timer();
+                    break;
+                } 
+            }
+            if(i == roomsInfo.length)
+            {
+                //建立obj数据，保存当前房间和Socket的信息
+                var obj = {
+                    'room':data.room,
+                    'playerSocket':[],
+                    'frameFlag':[false,false],
+                    'ready':0,
+                    'state':'wait',
+                    'data':[],
+                    'frame':0,
+                    'delayTimer':0
+                }
+                obj.timer = function(){
+                    var self = obj;
+                    var interval = setInterval(function(){
+                        if(self.delayTimer > 0)
+                        {
+                            self.delayTimer ++;
+                            if(self.delayTimer > 1000)
+                            {
+                            clearInterval(interval);
+                            }
+                        }
+                    },5)
+                }
+                obj.playerSocket[0] = socket;
+                //添加此房间
+                roomsInfo.push(obj);
+            }
+            console.log(roomsInfo);
             //发送反馈消息
-            //CEO的代码 socket.to(socket.id).emit('msg', {status:msgEnum.success, 'msg':'ok'});
-            socket.to(socket.id).emit('msg', {status:msgEnum.success, 'msg':'ok'});
+            //socket.to(socket.id).emit('msg', {status:msgEnum.success, 'msg':'ok'});
+            socket.to(data.room).emit('msg', {status:msgEnum.success, 'msg':'ok'});
         }else{
-            socket.to(socket.id).emit('msg', {status:msgEnum.fail, 'msg':'fail'});
+            socket.to(data.room).emit('msg', {status:msgEnum.fail, 'msg':'fail'});
         }
     });
-
 
     //room消息广播
-    socket.on('roomMsg', function(data){
-        if(data.room != null && data.room != ""){
-            socket.to(data.room).emit(event, {'status':200, 'msg':data.msg});
+    socket.on('room', function(data){
+        if(data.type != null && data.type != ""){
+            var room = data.room;
+            var leaveFlag = data.leaveFlag;
+
+            var event;
+            switch (data.type){   //不同房间不同事件
+                case 'roomChat': event = 'roomChat'; break;
+                case 'roomHit': event = 'roomHit'; break;
+                default:
+                    break;
+            }
+            //event = data.type;
+            // if(leaveFlag){
+            // }else{
+                socket.join(data.room);
+                socket.to(data.room).emit(event, {'status':200, 'msg':data.msg});
+            //}
         }else{
-            socket.to(socket.id).emit('msg', {status:msgEnum.fail, 'msg':'no room'});
+            new Error('进入room失败')
         }
     });
 
+    //等待准备完毕的消息
+    socket.on('battleReady', function(){
+        console.log('battleReady');
+        for(var i in roomsInfo){
+            position = roomsInfo[i].playerSocket.indexOf(socket);
+            console.log('position:' + position);
+            //如果找到了当前socket的所在位置
+            if(position !== -1)
+            {
+                //如果准备人数大于等于二的话
+                if(++ roomsInfo[i].ready >= 2)
+                {
+                    roomsInfo[i].state = 'start';
+                    for(var j in roomsInfo[i].playerSocket)
+                    {
+                        roomsInfo[i].delayTimer = 1;
+                        roomsInfo[i].playerSocket[j].emit('frameStep', {'status':200,'frame':0,'msg':"gameStart"});
+                    }
+                }
+                break;
+            }
+        }
+    });
 
-    //离开房间
-    socket.on('leaveRoom', function(data){
-        if(data.room != null && data.room != ""){
-            socket.leaveRoom(data.room);
-
-            // 用户离开room房间
-            if (!roomsInfo[data.room]) {  //room 没了当作成功
-                socket.to(socket.id).emit('msg', {status:msgEnum.success, 'msg':'ok'});
+    socket.on('frameOver', function(data){
+        for(var i in roomsInfo){
+            position = roomsInfo[i].playerSocket.indexOf(socket);
+            //如果找到了当前socket的所在位置
+            if(position !== -1 && roomsInfo[i].state == 'start')
+            {
+                //此标记位置为true
+                roomsInfo[i].frameFlag[position] = true;
+                roomsInfo[i].data[position] = data.msg;
+                //如果找不到为false的玩家标记，那么发送下一帧播放的数据
+                if(roomsInfo[i].frameFlag.indexOf(false) == -1)
+                {
+                    roomsInfo[i].frame ++;
+                    //标记位置为重置为false，重新开始等待帧的信号
+                    for(var j in roomsInfo[i].frameFlag)
+                    {
+                        //依次分别向另外的玩家发送消息
+                        roomsInfo[i].playerSocket[j].to(roomsInfo[i].room).emit
+                        ('frameStep', {'status':200,'delay':roomsInfo[i].delayTimer,'frame':roomsInfo[i].frame, 'msg':roomsInfo[i].data[j]});
+                        
+                        roomsInfo[i].frameFlag[j] = false;
+                    }
+                    roomsInfo[i].delayTimer = 1;
+                }
                 return;
             }
-            roomsInfo[data.room].pop(util.decode(data.token));
-            socket.to(socket.id).emit('msg', {status:msgEnum.success, 'msg':'ok'});
-        }else{
-            socket.to(socket.id).emit('msg', {status:msgEnum.fail, 'msg':'fail'});
         }
     });
-
-
-    //room消息广播    作废
-    // socket.on('room', function(data){
-    //     console.log("room内消息广播");
-    //     if(data.type != null && data.type != ""){
-    //         var type = data.type;
-    //         var room = data.room;
-    //         var leaveFlag = data.leaveFlag;
-    //
-    //         var event;
-    //         switch (type){   //不同房间不同事件
-    //             case 'roomChat': event = 'roomChat'; break;
-    //             case 'roomHit': event = 'roomHit'; break;
-    //             default:
-    //                 break;
-    //         }
-    //         if(leaveFlag){
-    //         }else{
-    //             socket.join(room);
-    //             socket.to(room).emit(event, {'status':200, 'msg':data.msg});
-    //         }
-    //     }else{
-    //         new Error('进入room失败')
-    //     }
-    // });
 });
