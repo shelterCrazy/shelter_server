@@ -25,7 +25,9 @@ var init = function(){
     //session中间件
     app.use(session({
         secret: 'kenanCrazy', //secret的值建议使用随机字符串
-        cookie: {maxAge: 60 * 1000 * 30} // 过期时间（毫秒）
+        cookie: {maxAge: 60 * 1000 * 30}, // 过期时间（毫秒）
+        resave:'',
+        saveUninitialized:''
     }));
 
     // parse application/x-www-form-urlencoded
