@@ -73,7 +73,10 @@ interceptor(app);
 //接口 接收匹配请求
 app.post("/matcher/appealMatch", function (req, res) {
     // res.end(JSON.stringify({"host":req.header("host"), "ip":req.ip, "method":req.method}));
-    res.json(req.body);
+    res.writeHead(200, {'Content-Type': 'application/json'});
+
+    logger.info('')
+    res.end({'status':'200','msg':'ok'});
 })
 
 

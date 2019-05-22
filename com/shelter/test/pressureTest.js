@@ -3,8 +3,9 @@ var http = require('http');
 
 var createOptions = {
     host: '47.254.18.39',
+    // host: '127.0.0.1',
     port: '3000',
-    path: '/queryAllUser',
+    path: '/detect',
     method: 'get',
     headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -13,7 +14,7 @@ var createOptions = {
 }
 
 //请求次数
-var total = 50000;
+var total = 1000;
 //统计并发数
 var count = 0;
 
