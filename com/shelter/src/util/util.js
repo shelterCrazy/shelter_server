@@ -6,7 +6,7 @@
  */
 var session = require('express-session');
 
-//token 池
+//token 池    tokenPool[id]=token
 var tokenPool = [];
 
 
@@ -60,6 +60,7 @@ module.exports = {
             token = req.session.token;
         }
 
+        logt
         return token;
     }
 }

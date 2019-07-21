@@ -19,7 +19,7 @@ module.exports = {
               appenders:[
                   "AllLog"
               ],
-              level:"info"
+              level:"debug"
           },
       }
   },

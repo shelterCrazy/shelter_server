@@ -43,19 +43,7 @@ var init = function(){
         logger.debug('Request Type:', req.method);
 
         //get post session获取token
-        if(req.method == "GET" || req.method == "get"){
-            token = req.param("token");
-            logger.debug("get:" + token);
-        }else{
-            token = req.body.token;
-            logger.debug("post:" + token);
-        }
-
-        //session获取token
-        if(token == null || token == undefined){
-            token = req.session.token;
-            logger.debug("session:" + token);
-        }
+        token = util.getToken(req);
 
         //校验token有效性
         if(token == null || token == undefined){

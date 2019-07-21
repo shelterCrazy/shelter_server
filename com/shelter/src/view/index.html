@@ -38,16 +38,10 @@
         var token;
         var userName = "kenan";
         var password = "123456";
+        var roomTemp;
 
-        //游戏状态
-        var statusEnum = {
-            start:0,    //开始状态
-            login:1,    //已登陆状态
-            fight:2,    //战斗场景状态
-            index:3,    //主界面状态
-            exit:99     //应当退出游戏
-        }
 
+        /**常量组*/
         //消息结果
         var msgEnum= {
             success:200,   //普通消息
@@ -55,18 +49,9 @@
             error:2,    //错误消息
         }
 
-        //操作类型
-        var msgType= {
-            login:0,        //登陆操作
-            joinRoom:1,     //申请room操作
-            leaveRoom:2,    //离开房间
-            match:3     //匹配
-        }
 
-        var status = statusEnum.start;
-        var fightRoom;  //战斗房间记录
-        var talkRoom;  //聊天室房间记录
 
+        /**操作模块*/
         //初始化页面  登陆访问   测试账户 kenan : 123456
         var login = function(){
             socket.emit('login', {'userName':userName,'password':password});
@@ -80,18 +65,23 @@
             socket.emit('msg', {'msg': msg, 'id':id, 'token':token});
         }
 
-        //申请room聊天室聊天  type: roomChat普通聊天 roomHit战斗房间/战斗申请
-        var joinMsg = function(type,room){
-            socket.emit('join',{'type':type, 'room':room, 'token':token})
+
+
+        //申请room聊天室聊天   不加入房间不能收到消息，但是可以发消息
+        var joinMsg = function(room){
+            roomTemp = room;
+            socket.emit('join',{'room':room, 'token':token})
         }
-        //room聊天  可以先用joinMsg 申请一个房间   然后再用roomMsg发送消息
-        var roomMsg = function(room, msg, type){
-            socket.emit('room', {'type':type, 'room':room, 'msg':msg, 'token':token});
+        //room聊天  先joinMsg加入房间才能收到消息， 不加入的话只能发消息
+        var roomMsg = function(room, msg){
+            socket.emit('roomMsg', {'room':room, 'msg':msg, 'token':token});
         }
         //退出room
         var endRoom = function(room){
-            socket.emit('leave', {'room':room, 'leaveFlag':true, 'token':token})
+            socket.emit('leaveRoom', {'room':room, 'token':token})
         }
+
+
 
         //解除链接  退出游戏
         var stop = function(){
@@ -100,35 +90,43 @@
             socket.close();
         }
 
-        //匹配请求
-        var match = function(){
-            socket.emit('match', {'token':token});
-        }
+//        //匹配请求
+//        var match = function(){
+//            socket.emit('match', {'token':token});
+//        }
 
 
 
-        var start = function(){
-            socket = io.connect(url+"/index");
+
+        /**模拟初始化+事件处理监听*/
+        //测试类启动
+        var start = function() {
+            socket = io.connect(url + "/index");
 
             //登陆结果处理
-            socket.on('loginResult', function(data){
+            socket.on('loginResult', function (data) {
                 console.log('loginResult:' + data.msg + " results:" + data.results);
                 token = data.results;
 
             });
             //错误处理
-            socket.on('error', function(error){
+            socket.on('error', function (error) {
                 console.log('error:' + error);
             });
             //链接已关闭
-            socket.on('disconnect', function(data){
+            socket.on('disconnect', function (data) {
                 console.log('disconnect' + data.msg);
             });
-            //重新链接
+            //重新链接成功
             socket.on('reconnect', function () {
                 console.log('reconnect');
-                if (userName != null && userName.length > 0) {
-                    login();
+                //                if (userName != null && userName.length > 0) {
+                //                    login();
+                //                }
+
+                //如果处于room中断开连接  重连后重新加入room
+                if (roomTemp != undefined && roomTemp != null) {
+                    joinMsg(roomTemp);
                 }
             });
             //重连错误
@@ -136,50 +134,8 @@
                 console.log('reconnect_error');
             });
             //消息类监听
-            socket.on('msg', function(data){
+            socket.on('msg', function (data) {
                 console.log('msg' + data.msg);
-            });
-            //操作类反馈消息监听
-            socket.on('controlMsg', function(data){
-                console.log('controlMsg, type:' + data.type + ' msg:' + data.msg);
-                switch (data.type){
-                    //登陆
-                    case msgType.login:
-                        if(data.status == msgEnum.fail || data.status == msgEnum.error){ //登陆错误重新尝试
-                            setTimeout(login(),1000); //1秒间隔
-                        }
-                        break;
-                    //room操作
-                    case msgType.joinRoom:
-                        if(data.status == msgEnum.fail || data.status == msgEnum.error){
-                            setTimeout(join(),1000); //1秒间隔
-                        }else{
-                            //type: roomChat 普通聊天 roomHit 战斗房间
-                            if(data.type == 'roomChat'){
-                                talkRoom = data.room;
-                            }else if(data.type == 'roomHit'){
-                                fightRoom = data.room;
-                            }
-                        }
-                        break;
-                    default:
-                        console.log("default  type:" + data.type);
-                }
-            });
-            //room聊天
-            socket.on('roomChat', function(data){
-               console.log('msg:' + data.msg);
-            });
-            socket.on('roomHit', function(data){
-               console.log('hit:' + data.msg);
-            });
-            //匹配结果
-            socket.on('matchMsg', function(data){
-                if(data.status == msgEnum.success){
-                    console.log("match成功 room:" + data.room);
-                }else{
-                    console.log("match失败 msg:" + data.msg);
-                }
             });
         }
     </script>
